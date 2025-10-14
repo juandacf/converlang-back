@@ -2,10 +2,9 @@ import { IsOptional, IsString, Length } from 'class-validator';
 
 
 export class UpdateCountryDto {
-  @IsOptional()
   @IsString()
   @Length(2, 5)
-  country_code?: string;
+  country_code: string;
 
   @IsOptional()
   @IsString()
