@@ -31,7 +31,12 @@ export class LanguagesService {
         }
     }
 
-    async update(language_code: string, data:CreateLanguageDto):Promise <Language> }{
-        const result = await this.db.query<Language> ('UPDATE languages SET language_name = ')
+    async update(language_code: string, data:CreateLanguageDto):Promise <Language> {
+        const result = await this.db.query<Language> ('UPDATE languages SET language_name = $1 WHERE language_code = $2 RETURNING *;',[data.language_name, data.language_code ]);
+        return result[0]
+    }
+
+    async delete(language_code: string): Promise<void> {
+        await this.db.query('DELETE FROM languages WHERE language_code = $1', [language_code])
     }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { LanguagesService } from './languages.service';
 import { CreateLanguageDto } from './DTO/create-language.dto';
 
@@ -19,6 +19,16 @@ export class LanguagesController {
     @Post()
     create(@Body() body: CreateLanguageDto){
         return this.languagesService.create(body);
+    }
+
+    @Patch(':language_code')
+    update(@Param('language_code') language_code: string, @Body() body: CreateLanguageDto){
+        return this.languagesService.update(language_code, body)
+    }
+    
+    @Delete(':language_code')
+    delete(@Param('language_code') language_code:string){
+        return this.languagesService.delete(language_code)
     }
     
 
