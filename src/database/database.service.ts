@@ -10,7 +10,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       host: 'localhost',
       port: 5432,
       user: 'postgres',
-      password: 'juanda0425',
+      password: 'PgSena2024',
       database: 'converlang',
     });
   }
