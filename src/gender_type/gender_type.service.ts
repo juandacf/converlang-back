@@ -12,4 +12,9 @@ export class GenderTypeService {
         const data = await this.db.query<gender_type>(`SELECT gender_id, gender_name FROM gender_type;`);
         return data;
     }
+
+    async findOne(gender_id: Number): Promise<gender_type | null> {
+        const result = await this.db.query<gender_type>('SELECT gender_id, gender_name FROM gender_type where gender_id = $1', [gender_id])
+        return result[0] || null; 
+    }
 }

@@ -5,43 +5,43 @@ import { UpdateCountryDto } from './DTO/update-country.dto';
 
 @Injectable()
 export class CountriesService {
-      constructor(private readonly db: DatabaseService) {}
+  constructor(private readonly db: DatabaseService) { }
 
-async getAll(): Promise<Country[]> {
-  return this.db.query<Country>('SELECT country_code, country_name, timezone FROM countries');
-}
-
-async findOne(id:string): Promise <Country | null> {
-  const result = await this.db.query<Country> ('SELECT country_code, country_name, timezone FROM countries where country_code = $1', [id])
-  return result[0] || null;
-}
-
-async create(data: Country): Promise<Country> {
-  try {
-    const result = await this.db.query<Country>(
-      'INSERT INTO countries (country_code, country_name, timezone, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING *',
-      [data.country_code, data.country_name, data.timezone]
-    );
-    return result[0];
-  } catch (err) {
-    console.error('Error:', err);
-    throw err;
+  async getAll(): Promise<Country[]> {
+    return this.db.query<Country>('SELECT country_code, country_name, timezone FROM countries');
   }
-}
 
-async update(id:string, data:UpdateCountryDto): Promise <Country> {
+  async findOne(id: string): Promise<Country | null> {
+    const result = await this.db.query<Country>('SELECT country_code, country_name, timezone FROM countries where country_code = $1', [id])
+    return result[0] || null;
+  }
+
+  async create(data: Country): Promise<Country> {
+    try {
+      const result = await this.db.query<Country>(
+        'INSERT INTO countries (country_code, country_name, timezone, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING *',
+        [data.country_code, data.country_name, data.timezone]
+      );
+      return result[0];
+    } catch (err) {
+      console.error('Error:', err);
+      throw err;
+    }
+  }
+
+  async update(id: string, data: UpdateCountryDto): Promise<Country> {
     const result = await this.db.query<Country>(
-    `UPDATE countries 
+      `UPDATE countries 
      SET country_name = COALESCE($1, country_name),
          timezone = COALESCE($2, timezone)
      WHERE country_code = $3
      RETURNING *`,
-    [data.country_name ?? null, data.timezone ?? null, id],
-  );
-  return result[0];
-}
+      [data.country_name ?? null, data.timezone ?? null, id],
+    );
+    return result[0];
+  }
 
-async delete(id:string): Promise<void> {
-  await this.db.query('DELETE FROM countries WHERE country_code = $1', [id]);
-}
+  async delete(id: string): Promise<void> {
+    await this.db.query('DELETE FROM countries WHERE country_code = $1', [id]);
+  }
 }
