@@ -15,4 +15,4 @@ export class UpdateCountryDto {
   @IsString()
   @Length(2, 50)
   timezone?: string;
-}
+} 
