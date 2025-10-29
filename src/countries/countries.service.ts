@@ -8,11 +8,11 @@ export class CountriesService {
   constructor(private readonly db: DatabaseService) { }
 
   async getAll(): Promise<Country[]> {
-    return this.db.query<Country>('SELECT * FROM get_all_countries()');
+    return this.db.query<Country>('SELECT country_code, country_name, timezone FROM get_all_countries()');
   }
 
   async findOne(id: string): Promise<Country | null> {
-    const result = await this.db.query<Country>('SELECT country_code, country_name, timezone FROM countries where country_code = $1', [id])
+    const result = await this.db.query<Country>('SELECT country_code, country_name, timezone FROM get_country_by_code($1);', [id])
     return result[0] || null;
   }
 
