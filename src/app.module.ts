@@ -5,9 +5,8 @@ import { CountriesModule } from './countries/countries.module';
 import { DatabaseModule } from './database/database.module';
 import { LanguagesModule } from './languages/languages.module';
 import { GenderTypeModule } from './gender_type/gender_type.module';
-import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [CountriesModule, DatabaseModule, LanguagesModule, GenderTypeModule, UsersModule]
+  imports: [CountriesModule, DatabaseModule, LanguagesModule, GenderTypeModule]
 })
-export class AppModule {}
+export class AppModule { }
