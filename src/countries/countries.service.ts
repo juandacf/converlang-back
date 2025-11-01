@@ -31,17 +31,14 @@ export class CountriesService {
 
   async update(id: string, data: UpdateCountryDto): Promise<Country> {
     const result = await this.db.query<Country>(
-      `UPDATE countries 
-     SET country_name = COALESCE($1, country_name),
-         timezone = COALESCE($2, timezone)
-     WHERE country_code = $3
-     RETURNING *`,
+      `SELECT country_code, country_name, timezone FROM update_country($3, $1, $2);`,
       [data.country_name ?? null, data.timezone ?? null, id],
     );
     return result[0];
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.query('DELETE FROM countries WHERE country_code = $1', [id]);
+  async delete(id: string): Promise <String> {
+    const result = await this.db.query('SELECT delete_country_by_code($1) AS message', [id]);
+    return result[0].message;
   }
 }
