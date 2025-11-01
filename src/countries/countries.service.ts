@@ -19,7 +19,7 @@ export class CountriesService {
   async create(data: Country): Promise<Country> {
     try {
       const result = await this.db.query<Country>(
-        'INSERT INTO countries (country_code, country_name, timezone, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING *',
+        'SELECT country_code, country_name, timezone FROM add_country($1, $2, $3);',
         [data.country_code, data.country_name, data.timezone]
       );
       return result[0];

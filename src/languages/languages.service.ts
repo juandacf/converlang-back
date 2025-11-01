@@ -21,7 +21,7 @@ export class LanguagesService {
     async create(data: Language) : Promise <Language> {
         try {
             const result = await this.db.query<Language>(
-                'insert into languages (language_code, language_name, created_at, updated_at) values ($1, $2, NOW(), NOW()) RETURNING *', [data.language_code, data.language_name]
+                'SELECT * FROM create_language($1, $2)', [data.language_code, data.language_name]
                 
             )
             return result[0]
