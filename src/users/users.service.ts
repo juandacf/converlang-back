@@ -22,8 +22,8 @@ async create(user: createUserDto): Promise<User> {
 
     
 const result = await this.db.query<User>(
-  'SELECT * FROM fun_insert_usuarios($1, $2, $3, $4, $5, $6, $7, NULL, $8, $9, 0, NULL, $10)',
-  [user.first_name, user.last_name, user.email, user.password, user.gender_id, user.birth_date, user.country_id, user.native_lang_id, user.target_lang_id, user.description]
+  'SELECT * FROM fun_insert_usuarios($1, $2, $3, $4, $5, $6, $7, NULL, $8, $9, 0, NULL, $10, $11)',
+  [user.first_name, user.last_name, user.email, user.password, user.gender_id, user.birth_date, user.country_id, user.native_lang_id, user.target_lang_id, user.description, user.role_code]
 );
     return result[0]
 }
