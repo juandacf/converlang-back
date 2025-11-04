@@ -28,5 +28,4 @@ const result = await this.db.query<User>(
     return result[0]
 }
 
-
 }
