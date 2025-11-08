@@ -9,9 +9,10 @@ import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
 import { UsersModule } from './users/users.module';
 import { BanksModule } from './banks/banks.module';
+import { TitlesModule } from './titles/titles.module';
 
 @Module({
-  imports: [CountriesModule, DatabaseModule, LanguagesModule, GenderTypeModule, UsersModule, BanksModule],
+  imports: [CountriesModule, DatabaseModule, LanguagesModule, GenderTypeModule, UsersModule, BanksModule, TitlesModule],
   controllers: [UsersController],
   providers: [UsersService]
 })
