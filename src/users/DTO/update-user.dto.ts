@@ -1,29 +1,39 @@
-import { IsDateString, IsEmail, IsNotEmpty, IsNumber, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
-
+import { 
+  IsDateString, 
+  IsEmail, 
+  IsNotEmpty, 
+  IsNumber, 
+  IsOptional, 
+  IsString, 
+  Matches, 
+  MaxLength, 
+  Min, 
+  Max, 
+  ValidateIf
+} from "class-validator";
 
 export class updateUserDto {
 
-    @IsString()
-    @MaxLength(100)
-    @IsNotEmpty()
-    first_name: String
+  @IsString()
+  @MaxLength(100)
+  @IsNotEmpty()
+  first_name: string;
 
-    @IsString()
-    @MaxLength(100)
-    @IsNotEmpty()
-    last_name: String
+  @IsString()
+  @MaxLength(100)
+  @IsNotEmpty()
+  last_name: string;
 
-    @IsString()
-    @MaxLength(150)
-    @IsNotEmpty()
-    @IsEmail()
-    @Matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/, {
-    message: 'El correo debe tener un formato válido (ejemplo@dominio.com)',
-  })
-    email: String
-    
-    @IsNumber()
-    gender_id: Number;
+  @IsString()
+  @MaxLength(150)
+  @IsNotEmpty()
+  @IsEmail()
+  @Matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/)
+  email: string;
+
+  @IsNumber()
+  @IsOptional()
+  gender_id?: number;
 
     @IsDateString()
     @IsNotEmpty()
@@ -35,12 +45,37 @@ export class updateUserDto {
     })
     birth_date: string;
 
-    @IsString()
-    @MaxLength(5)
-    @IsNotEmpty()
-    country_id: String;
+  @IsString()
+  @MaxLength(5)
+  @IsNotEmpty()
+  country_id: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  profile_photo?: string;
 
+  @IsString()
+  @MaxLength(5)
+  @IsNotEmpty()
+  native_lang_id: string;
 
+  @IsString()
+  @MaxLength(5)
+  @IsNotEmpty()
+  target_lang_id: string;
 
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  match_quantity: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(5)
+  bank_id?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 }

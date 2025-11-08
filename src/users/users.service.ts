@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { User } from './DTO/user.type';
 import { createUserDto } from './DTO/create-user.dto';
+import { updateUserDto } from './DTO/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -28,4 +29,37 @@ const result = await this.db.query<User>(
     return result[0]
 }
 
+  async update(id_user: number, user: updateUserDto): Promise<string> {
+    const result = await this.db.query<{ update_user: string }>(
+      `SELECT update_user(
+          $1, $2, $3, $4, $5, $6, $7, 
+          $8, $9, $10, $11, $12, $13
+       ) AS update_user`,
+      [
+        id_user,
+        user.first_name,
+        user.last_name,
+        user.email,
+        user.gender_id,
+        user.birth_date,
+        user.country_id,
+        user.profile_photo || null,
+        user.native_lang_id,
+        user.target_lang_id,
+        user.match_quantity,
+        user.bank_id || null,
+        user.description || null,
+      ]
+    );
+
+    return result[0].update_user;
+  }
+
+  async delete(id_user: number): Promise<string> {
+    const result = await this.db.query<{ delete_user: string }>(
+      'SELECT delete_user($1) AS delete_user',
+      [id_user]
+    );
+    return result[0].delete_user;
+  }
 }
