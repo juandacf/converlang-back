@@ -55,11 +55,16 @@ const result = await this.db.query<User>(
     return result[0].update_user;
   }
 
-  async delete(id_user: number): Promise<string> {
-    const result = await this.db.query<{ delete_user: string }>(
+  async delete(id_user: number): Promise<String> {
+    const result = await this.db.query<String>(
       'SELECT delete_user($1) AS delete_user',
       [id_user]
     );
-    return result[0].delete_user;
+    return result[0];
+  }
+
+  async getPotentialMatchet(id_user: number): Promise<User[]>{
+    const result = await this.db.query<User>('SELECT * FROM fun_get_potential_users($1);', [id_user])
+    return result;
   }
 }

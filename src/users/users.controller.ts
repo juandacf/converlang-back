@@ -33,6 +33,10 @@ delete(@Param('user_id') user_id: number){
     return this.usersService.delete(user_id)
 }
 
+@Get('/potentialMatches/:user_id')
+getPotentialMatches(@Param('user_id') user_id:number){
+    return this.usersService.getPotentialMatchet(user_id)
+}
 }
 
 
