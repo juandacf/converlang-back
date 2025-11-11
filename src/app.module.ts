@@ -10,9 +10,10 @@ import { UsersService } from './users/users.service';
 import { UsersModule } from './users/users.module';
 import { BanksModule } from './banks/banks.module';
 import { TitlesModule } from './titles/titles.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [CountriesModule, DatabaseModule, LanguagesModule, GenderTypeModule, UsersModule, BanksModule, TitlesModule],
+  imports: [CountriesModule, DatabaseModule, LanguagesModule, GenderTypeModule, UsersModule, BanksModule, TitlesModule, AuthModule],
   controllers: [UsersController],
   providers: [UsersService]
 })

@@ -63,7 +63,7 @@ const result = await this.db.query<User>(
     return result[0];
   }
 
-  async getPotentialMatchet(id_user: number): Promise<User[]>{
+  async getPotentialMatches(id_user: number): Promise<User[]>{
     const result = await this.db.query<User>('SELECT * FROM fun_get_potential_users($1);', [id_user])
     return result;
   }

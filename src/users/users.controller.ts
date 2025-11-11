@@ -35,7 +35,7 @@ delete(@Param('user_id') user_id: number){
 
 @Get('/potentialMatches/:user_id')
 getPotentialMatches(@Param('user_id') user_id:number){
-    return this.usersService.getPotentialMatchet(user_id)
+    return this.usersService.getPotentialMatches(user_id)
 }
 }
 
