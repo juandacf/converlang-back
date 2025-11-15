@@ -11,11 +11,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       this.logger.log('🔄 Intentando conectar a PostgreSQL...');
       
       this.pool = new Pool({
-        host: '127.0.0.1',  
-        port: 5432,
-        user: 'postgres',
-        password: 'juanda0425',
-        database: 'converlang',
+        host: process.env.HOST, 
+        port: process.env.PORT,
+        user: process.env.USERR,
+        password: process.env.PASSWORD,
+        database: process.env.DATABASE
       });
 
       // Prueba la conexión

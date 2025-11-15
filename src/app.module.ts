@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CountriesModule } from './countries/countries.module';
@@ -13,8 +14,17 @@ import { TitlesModule } from './titles/titles.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [CountriesModule, DatabaseModule, LanguagesModule, GenderTypeModule, UsersModule, BanksModule, TitlesModule, AuthModule],
-  controllers: [UsersController],
-  providers: [UsersService]
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    CountriesModule,
+    DatabaseModule,
+    LanguagesModule,
+    GenderTypeModule,
+    UsersModule,
+    BanksModule,
+    TitlesModule,
+    AuthModule,
+  ],
 })
-export class AppModule { }
+export class AppModule {}
+
