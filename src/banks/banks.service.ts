@@ -23,21 +23,21 @@ export class BanksService {
   }
 
   async create(data: CreateBanksDto): Promise<Bank> {
-    try {
-      const result = await this.db.query<Bank>(
-        'SELECT bank_code, bank_name FROM add_bank($1, $2, $3);',
-        [data.bank_code, data.bank_name,]
-      );
-      return result[0];
-    } catch (err) {
-      console.error('Error:', err);
-      throw err;
-    }
+  try {
+    const result = await this.db.query<Bank>(
+      'SELECT bank_code, bank_name FROM add_bank($1, $2, $3);',
+      [data.bank_code, data.bank_name, data.country_id]  
+    );
+    return result[0];
+  } catch (err) {
+    console.error('Error:', err);
+    throw err;
   }
+}
 
   async update(code: string, data: UpdateBanksDto): Promise<Bank> {
     const result = await this.db.query<Bank>(
-      'SELECT bank_code, bank_name FROM update_bank($3, $1, $2);',
+      'SELECT bank_code, bank_name FROM update_bank($1, $2, $3);', 
       [data.bank_name ?? null, data.country_id ?? null, code]
     );
     return result[0];

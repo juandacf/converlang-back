@@ -10,4 +10,7 @@ export class CreateBanksDto{
     @MaxLength(100)
     bank_name: string;
 
+    @IsString()
+    @MaxLength(2)
+    country_id: string;
 }
