@@ -4,6 +4,7 @@ import { User } from './DTO/user.type';
 import { createUserDto } from './DTO/create-user.dto';
 import { updateUserDto } from './DTO/update-user.dto';
 import { UserValidation } from './DTO/user-validation.type';
+import bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -20,15 +21,30 @@ async findOne(id_user: Number): Promise<User | null>{
     return result[0] || null
 }
 
-async create(user: createUserDto): Promise<User> {
+async create(user: createUserDto) {
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(user.password, salt);
 
-    
-const result = await this.db.query<User>(
-  'SELECT * FROM fun_insert_usuarios($1, $2, $3, $4, $5, $6, $7, NULL, $8, $9, 0, NULL, $10, $11)',
-  [user.first_name, user.last_name, user.email, user.password, user.gender_id, user.birth_date, user.country_id, user.native_lang_id, user.target_lang_id, user.description, user.role_code]
-);
-    return result[0]
+  const result = await this.db.query<User>(
+    'SELECT * FROM fun_insert_usuarios($1, $2, $3, $4, $5, $6, $7, NULL, $8, $9, 0, NULL, $10, $11)',
+    [
+      user.first_name,
+      user.last_name,
+      user.email,
+      passwordHash,         // <-- AQUÍ ENTRARÁ EL HASH, NO LA CONTRASEÑA
+      user.gender_id,
+      user.birth_date,
+      user.country_id,
+      user.native_lang_id,
+      user.target_lang_id,
+      user.description,
+      user.role_code,
+    ]
+  );
+
+  return result[0];
 }
+
 
   async update(id_user: number, user: updateUserDto): Promise<string> {
     const result = await this.db.query<{ update_user: string }>(
@@ -69,8 +85,15 @@ const result = await this.db.query<User>(
     return result;
   }
 
-  async findByEmail(email:string): Promise<UserValidation | null> {
-    return null
-  }
+async findByEmail(email: string) {
+  const query = `
+    SELECT * FROM fun_find_user_by_email($1);
+  `;
+
+  const result = await this.db.query(query, [email]);
+
+  return result[0]; 
+}
+
   
 }

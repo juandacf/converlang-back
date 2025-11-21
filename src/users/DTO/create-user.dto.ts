@@ -25,7 +25,7 @@ export class createUserDto {
 
   @IsString()
   @MaxLength(255)
-  password : String;
+  password :string;
 
   @IsNumber()
   gender_id: Number;
