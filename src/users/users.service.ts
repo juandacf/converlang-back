@@ -3,6 +3,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { User } from './DTO/user.type';
 import { createUserDto } from './DTO/create-user.dto';
 import { updateUserDto } from './DTO/update-user.dto';
+import { UserValidation } from './DTO/user-validation.type';
 
 @Injectable()
 export class UsersService {
@@ -67,4 +68,9 @@ const result = await this.db.query<User>(
     const result = await this.db.query<User>('SELECT * FROM fun_get_potential_users($1);', [id_user])
     return result;
   }
+
+  async findByEmail(email:string): Promise<UserValidation | null> {
+    return null
+  }
+  
 }
