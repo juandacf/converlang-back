@@ -95,5 +95,8 @@ async findByEmail(email: string) {
   return result[0]; 
 }
 
-  
+async getCurrentMatches(id_user:number): Promise<User[]> {
+  const result = await this.db.query('SELECT * FROM fun_get_user_matches($1)', [id_user])
+  return result;
+}
 }
