@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
 import { TeacherProfilesModule } from './teacher_profiles/teacher-profiles.module';
+import { MatchesModule } from './matches/matches.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { TeacherProfilesModule } from './teacher_profiles/teacher-profiles.modul
     BanksModule,
     TitlesModule,
     AuthModule,
-    TeacherProfilesModule
+    TeacherProfilesModule,
+    MatchesModule
   ],
 providers: [
     {
