@@ -8,7 +8,7 @@ export class MatchesController {
 
     }
 
-    @Post()
+    @Post('/createLike')
     createLike(@Body() body:createLikeDto){
         return this.matchService.createLike(body);
     }
