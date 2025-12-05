@@ -99,4 +99,14 @@ async getCurrentMatches(id_user:number): Promise<User[]> {
   const result = await this.db.query('SELECT * FROM fun_get_user_matches($1)', [id_user])
   return result;
 }
+
+async getUserAge(id_user: number): Promise<number> {
+  const result = await this.db.query(
+    'SELECT get_user_age($1) AS age',
+    [id_user]
+  );
+
+  return result[0].age;
+}
+
 }

@@ -42,6 +42,12 @@ getPotentialMatches(@Param('user_id') user_id:number){
 getCurrentMatches(@Param('user_id') user_id:number){
     return this.usersService.getCurrentMatches(user_id)
 }
+
+@Get('/getUserAge/:user_id')
+getUserAge(@Param('user_id') user_id: number) {
+  return this.usersService.getUserAge(user_id);
+}
+
 }
 
 
