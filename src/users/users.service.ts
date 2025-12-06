@@ -5,6 +5,7 @@ import { createUserDto } from './DTO/create-user.dto';
 import { updateUserDto } from './DTO/update-user.dto';
 import { UserValidation } from './DTO/user-validation.type';
 import bcrypt from 'bcryptjs';
+import { potentialMatches } from './DTO/get-user-potential-matches.dto';
 
 @Injectable()
 export class UsersService {
@@ -80,8 +81,8 @@ async create(user: createUserDto) {
     return result[0];
   }
 
-  async getPotentialMatches(id_user: number): Promise<User[]>{
-    const result = await this.db.query<User>('SELECT * FROM fun_get_potential_users($1);', [id_user])
+  async getPotentialMatches(id_user: number): Promise<potentialMatches[]>{
+    const result = await this.db.query<potentialMatches>('SELECT * FROM fun_get_potential_users($1);', [id_user])
     return result;
   }
 
