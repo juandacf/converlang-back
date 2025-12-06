@@ -18,5 +18,5 @@ export type potentialMatches = {
     last_login: string;
     created_at: string;
     updated_at: string;
-    age: number;        // 👈 NUEVO
+    age: number;        
 }
