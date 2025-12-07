@@ -16,6 +16,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
 import { TeacherProfilesModule } from './teacher_profiles/teacher-profiles.module';
 import { MatchesModule } from './matches/matches.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { MatchesModule } from './matches/matches.module';
     TitlesModule,
     AuthModule,
     TeacherProfilesModule,
-    MatchesModule
+    MatchesModule,
+    ChatModule
   ],
 providers: [
     {
