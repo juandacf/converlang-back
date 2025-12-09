@@ -17,7 +17,7 @@ import { RolesGuard } from './auth/roles.guard';
 import { TeacherProfilesModule } from './teacher_profiles/teacher-profiles.module';
 import { MatchesModule } from './matches/matches.module';
 import { ChatModule } from './chat/chat.module';
-
+import { AdminModule } from './adminDashboard/admin.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -31,7 +31,8 @@ import { ChatModule } from './chat/chat.module';
     AuthModule,
     TeacherProfilesModule,
     MatchesModule,
-    ChatModule
+    ChatModule,
+    AdminModule
   ],
 providers: [
     {
