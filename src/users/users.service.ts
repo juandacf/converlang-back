@@ -6,6 +6,9 @@ import { updateUserDto } from './DTO/update-user.dto';
 import { UserValidation } from './DTO/user-validation.type';
 import bcrypt from 'bcryptjs';
 import { potentialMatches } from './DTO/get-user-potential-matches.dto';
+import * as fs from 'fs';
+import { join } from 'path';
+
 
 @Injectable()
 export class UsersService {
@@ -109,5 +112,41 @@ async getUserAge(id_user: number): Promise<number> {
 
   return result[0].age;
 }
+
+async updateProfilePhoto(id_user: number, photoPath: string): Promise<string> {
+  const result = await this.db.query<{ update_user_photo: string }>(
+    `SELECT update_user_photo($1, $2) AS update_user_photo`,
+    [id_user, photoPath],
+  );
+
+  return result[0].update_user_photo;
+}
+
+async getUserPhotoPath(id_user: number): Promise<string | null> {
+  const result = await this.db.query(
+    `SELECT profile_photo FROM users WHERE id_user = $1`,
+    [id_user]
+  );
+
+  return result.length > 0 ? result[0].profile_photo : null;
+}
+
+deleteFileIfExists(relativePath: string) {
+  try {
+    const safePath = relativePath.replace(/^\/+/, ""); 
+    const fullPath = join(process.cwd(), safePath);
+
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+      console.log("Foto anterior eliminada:", fullPath);
+    } else {
+      console.log("No hay foto anterior en:", fullPath);
+    }
+  } catch (e) {
+    console.error("Error eliminando foto:", e.message);
+  }
+}
+
+
 
 }

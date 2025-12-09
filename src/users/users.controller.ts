@@ -1,7 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { createUserDto } from './DTO/create-user.dto';
 import { updateUserDto } from './DTO/update-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { join } from 'path';
 
 @Controller('users')
 export class UsersController {
@@ -47,6 +50,44 @@ getCurrentMatches(@Param('user_id') user_id:number){
 getUserAge(@Param('user_id') user_id: number) {
   return this.usersService.getUserAge(user_id);
 }
+
+@Patch('photo/:id')
+@UseInterceptors(
+  FileInterceptor('photo', {
+    storage: diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, join(process.cwd(), 'user-pics')); 
+      },
+      filename: (req, file, cb) => {
+        cb(null, `${req.params.id}.png`);
+      },
+    }),
+  }),
+)
+async uploadUserPhoto(
+  @UploadedFile() file: Express.Multer.File,
+  @Param('id') id: number,
+) {
+  if (!file) {
+    throw new BadRequestException("No se recibió ningún archivo");
+  }
+
+  const previousPhoto = await this.usersService.getUserPhotoPath(id);
+
+  const newPath = `/user-pics/${id}.png`;
+
+  await this.usersService.updateProfilePhoto(id, newPath);
+
+  return {
+    message: "Foto actualizada correctamente",
+    path: newPath,
+  };
+}
+
+
+
+
+
 
 }
 
