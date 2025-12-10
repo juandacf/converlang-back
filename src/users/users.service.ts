@@ -113,7 +113,7 @@ async getUserAge(id_user: number): Promise<number> {
   return result[0].age;
 }
 
-async updateProfilePhoto(id_user: number, photoPath: string): Promise<string> {
+async updateProfilePhoto(id_user: number, photoPath: string | null,): Promise<string> {
   const result = await this.db.query<{ update_user_photo: string }>(
     `SELECT update_user_photo($1, $2) AS update_user_photo`,
     [id_user, photoPath],

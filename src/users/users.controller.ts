@@ -83,6 +83,18 @@ async uploadUserPhoto(
     path: newPath,
   };
 }
+@Delete('photo/:id')
+async deleteUserPhoto(@Param('id') id: number) {
+  const previousPhoto = await this.usersService.getUserPhotoPath(id);
+
+  if (previousPhoto) {
+    this.usersService.deleteFileIfExists(previousPhoto);
+  }
+
+  await this.usersService.updateProfilePhoto(id, null);
+
+  return { message: "Foto eliminada correctamente" };
+}
 
 
 
