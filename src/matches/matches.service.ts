@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { createLikeDto } from './DTO/create-like.dto';
+import { deleteMatchDto } from './DTO/delete-match.dto';
 
 @Injectable()
 export class MatchesService {
@@ -20,6 +21,21 @@ async createLike(like: createLikeDto): Promise<string> {
   } catch (error) {
 
     throw new BadRequestException('Error creating like.');
+  }
+}
+
+async deleteMatch(match: deleteMatchDto): Promise<string> {
+  try {
+    const result = await this.db.query(
+      'SELECT delete_match_by_users($1, $2) AS message',
+      [match.user_1, match.user_2]
+    );
+
+    return result[0].message;
+  } catch (error) {
+    throw new BadRequestException(
+      error?.message || 'Error al eliminar el match'
+    );
   }
 }
 
