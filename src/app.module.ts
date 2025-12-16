@@ -18,6 +18,7 @@ import { TeacherProfilesModule } from './teacher_profiles/teacher-profiles.modul
 import { MatchesModule } from './matches/matches.module';
 import { ChatModule } from './chat/chat.module';
 import { AdminModule } from './adminDashboard/admin.module';
+import { CallModule } from './call/call.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -32,7 +33,8 @@ import { AdminModule } from './adminDashboard/admin.module';
     TeacherProfilesModule,
     MatchesModule,
     ChatModule,
-    AdminModule
+    AdminModule,
+    CallModule
   ],
 providers: [
     {

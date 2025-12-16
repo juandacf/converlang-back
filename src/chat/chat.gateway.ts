@@ -9,9 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 
 @WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
+  cors: { origin: '*' },
 })
 export class ChatGateway {
   @WebSocketServer()
@@ -19,34 +17,59 @@ export class ChatGateway {
 
   constructor(private readonly chatService: ChatService) {}
 
+  private normalizeMatchId(matchId: any): number {
+    // Soporta: 12, "12", "match_12"
+    if (typeof matchId === 'string') {
+      const m = matchId.match(/(\d+)/); // extrae el primer número
+      if (m?.[1]) return Number(m[1]);
+    }
+    return Number(matchId);
+  }
+
+  private roomName(matchId: any): string {
+    const id = this.normalizeMatchId(matchId);
+    if (!Number.isFinite(id)) throw new Error(`Invalid matchId: ${matchId}`);
+    return `match_${id}`;
+  }
+
   // ===============================================
   // 1. Unirse a una sala (match)
   // ===============================================
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
-    @MessageBody() matchId: number,
+    @MessageBody() matchId: any,
     @ConnectedSocket() client: Socket,
   ) {
-    const room = `match_${matchId}`;
+    const room = this.roomName(matchId);
     client.join(room);
-    console.log(`Cliente unido a sala: ${room}`);
+    console.log(`Cliente ${client.id} unido a sala: ${room}`);
+    return { ok: true, room };
   }
 
   // ===============================================
   // 2. Enviar mensaje a una sala
   // ===============================================
-  @SubscribeMessage('sendMessage')
-  async handleSendMessage(@MessageBody() data: any) {
-    const { matchId, senderId, message } = data;
+@SubscribeMessage('sendMessage')
+async handleSendMessage(@MessageBody() data: any) {
+  const { matchId, senderId, message } = data;
+  const numericId = Number(matchId);
 
-    // Guardar en BD con tu función PostgreSQL
-    const savedMessage = await this.chatService.sendMessage(
-      matchId,
-      senderId,
-      message,
-    );
+  const savedMessage = await this.chatService.sendMessage(
+    numericId,
+    Number(senderId),
+    message,
+  );
 
-    // Emitir mensaje a todos en la sala
-    this.server.to(`match_${matchId}`).emit('newMessage', savedMessage);
-  }
+  // FORZAR FORMA CONSISTENTE
+  const payload = {
+    message_id: savedMessage?.message_id ?? savedMessage?.id ?? Date.now(),
+    match_id: numericId,
+    sender_id: Number(senderId),
+    message: savedMessage?.message ?? message,
+    created_at: savedMessage?.created_at ?? new Date().toISOString(),
+  };
+
+  this.server.to(`match_${numericId}`).emit('newMessage', payload);
+}
+
 }
