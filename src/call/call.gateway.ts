@@ -22,9 +22,10 @@ export class CallGateway {
     @MessageBody() matchId: number,
     @ConnectedSocket() client: Socket,
   ) {
-    const room = `call_${matchId}`;
+    const room = `call_${Number(matchId)}`;
     client.join(room);
-    console.log(`📞 Cliente unido a sala de llamada: ${room}`);
+    console.log(`📞 Cliente ${client.id} unido a sala de llamada: ${room}`);
+    return { ok: true, room };
   }
 
   // ============================================
@@ -35,13 +36,17 @@ export class CallGateway {
     @MessageBody() data: { matchId: number; caller: any },
     @ConnectedSocket() client: Socket,
   ) {
-    const { matchId, caller } = data;
+    const matchId = Number(data.matchId);
+    const room = `call_${matchId}`;
 
-    console.log(`📞 Solicitud de llamada enviada a sala call_${matchId}`);
+    console.log(`📞 Solicitud de llamada enviada a sala ${room}`);
 
-    this.server.to(`call_${matchId}`).emit('incomingCall', {
-      caller,
+    // IMPORTANT: solo a los demás, no al emisor
+    client.to(room).emit('incomingCall', {
+      caller: data.caller,
     });
+
+    return { ok: true };
   }
 
   // ============================================
@@ -50,8 +55,15 @@ export class CallGateway {
   @SubscribeMessage('callAccepted')
   handleCallAccepted(
     @MessageBody() data: { matchId: number },
+    @ConnectedSocket() client: Socket,
   ) {
-    this.server.to(`call_${data.matchId}`).emit('callAccepted');
+    const matchId = Number(data.matchId);
+    const room = `call_${matchId}`;
+
+    // solo a los demás
+    client.to(room).emit('callAccepted');
+
+    return { ok: true };
   }
 
   // ============================================
@@ -60,8 +72,13 @@ export class CallGateway {
   @SubscribeMessage('callRejected')
   handleCallRejected(
     @MessageBody() data: { matchId: number },
+    @ConnectedSocket() client: Socket,
   ) {
-    this.server.to(`call_${data.matchId}`).emit('callRejected');
+    const matchId = Number(data.matchId);
+    const room = `call_${matchId}`;
+
+    client.to(room).emit('callRejected');
+    return { ok: true };
   }
 
   // ============================================
@@ -70,10 +87,17 @@ export class CallGateway {
   @SubscribeMessage('webrtcOffer')
   handleWebRTCOffer(
     @MessageBody() data: { matchId: number; offer: any },
+    @ConnectedSocket() client: Socket,
   ) {
-    this.server.to(`call_${data.matchId}`).emit('webrtcOffer', {
+    const matchId = Number(data.matchId);
+    const room = `call_${matchId}`;
+
+    // solo a los demás (evita que el caller se procese su propia offer)
+    client.to(room).emit('webrtcOffer', {
       offer: data.offer,
     });
+
+    return { ok: true };
   }
 
   // ============================================
@@ -82,10 +106,17 @@ export class CallGateway {
   @SubscribeMessage('webrtcAnswer')
   handleWebRTCAnswer(
     @MessageBody() data: { matchId: number; answer: any },
+    @ConnectedSocket() client: Socket,
   ) {
-    this.server.to(`call_${data.matchId}`).emit('webrtcAnswer', {
+    const matchId = Number(data.matchId);
+    const room = `call_${matchId}`;
+
+    // solo a los demás (evita que el callee procese su propia answer)
+    client.to(room).emit('webrtcAnswer', {
       answer: data.answer,
     });
+
+    return { ok: true };
   }
 
   // ============================================
@@ -94,9 +125,15 @@ export class CallGateway {
   @SubscribeMessage('webrtcIceCandidate')
   handleNewIceCandidate(
     @MessageBody() data: { matchId: number; candidate: any },
+    @ConnectedSocket() client: Socket,
   ) {
-    this.server.to(`call_${data.matchId}`).emit('webrtcIceCandidate', {
+    const matchId = Number(data.matchId);
+    const room = `call_${matchId}`;
+
+    client.to(room).emit('webrtcIceCandidate', {
       candidate: data.candidate,
     });
+
+    return { ok: true };
   }
 }
