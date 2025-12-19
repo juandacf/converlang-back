@@ -136,4 +136,22 @@ export class CallGateway {
 
     return { ok: true };
   }
+
+  // ============================================
+// 7. Terminar llamada
+// ============================================
+@SubscribeMessage('endCall')
+handleEndCall(
+  @MessageBody() data: { matchId: number },
+  @ConnectedSocket() client: Socket,
+) {
+  const matchId = Number(data.matchId);
+  const room = `call_${matchId}`;
+
+  // Notificar al otro usuario
+  client.to(room).emit('callEnded');
+
+  return { ok: true };
+}
+
 }
