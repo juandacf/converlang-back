@@ -19,6 +19,7 @@ import { MatchesModule } from './matches/matches.module';
 import { ChatModule } from './chat/chat.module';
 import { AdminModule } from './adminDashboard/admin.module';
 import { CallModule } from './call/call.module';
+import { PreferencesModule } from './preferences/preferences.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -34,7 +35,8 @@ import { CallModule } from './call/call.module';
     MatchesModule,
     ChatModule,
     AdminModule,
-    CallModule
+    CallModule,
+    PreferencesModule
   ],
 providers: [
     {
