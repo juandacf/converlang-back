@@ -36,4 +36,11 @@ export class CallService {
 
     return rows[0];
   }
+
+async getLastMonthCalls (user_id: number){
+
+    const result = await this.db.query('SELECT get_user_sessions_last_month($1);', [user_id])
+
+    return result[0].get_user_sessions_last_month
+  }
 }
