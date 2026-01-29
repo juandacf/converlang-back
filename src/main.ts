@@ -8,8 +8,8 @@ import * as fs from 'fs';
 async function bootstrap() {
   // 🔐 HTTPS options (mkcert)
   const httpsOptions = {
-    key: fs.readFileSync('localhost+2-key.pem'), //Estos nombres se deben actualizar al momento de la creación de los certificados
-    cert: fs.readFileSync('localhost+2.pem'), //Estos nombres se deben actualizar al momento de la creación de los certificados
+    key: fs.readFileSync('localhost+3-key.pem'),
+    cert: fs.readFileSync('localhost+3.pem'),
   };
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {

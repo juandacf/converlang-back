@@ -20,6 +20,7 @@ import { ChatModule } from './chat/chat.module';
 import { AdminModule } from './adminDashboard/admin.module';
 import { CallModule } from './call/call.module';
 import { PreferencesModule } from './preferences/preferences.module';
+import { UserRolesModule } from './user_roles/user_roles.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -36,14 +37,15 @@ import { PreferencesModule } from './preferences/preferences.module';
     ChatModule,
     AdminModule,
     CallModule,
-    PreferencesModule
+    PreferencesModule,
+    UserRolesModule
   ],
-providers: [
+  providers: [
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
     }
   ],
 })
-export class AppModule {}
+export class AppModule { }
 

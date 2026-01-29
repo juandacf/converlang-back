@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
@@ -6,11 +6,12 @@ import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule } from '@nestjs/config';
+import { ActiveUserGuard } from './guards/active-user.guard';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    UsersModule,
+    forwardRef(() => UsersModule),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
@@ -19,8 +20,10 @@ import { ConfigModule } from '@nestjs/config';
   ],
   providers: [
     AuthService,
-    JwtStrategy
+    JwtStrategy,
+    ActiveUserGuard
   ],
   controllers: [AuthController],
+  exports: [ActiveUserGuard]
 })
-export class AuthModule {}
+export class AuthModule { }

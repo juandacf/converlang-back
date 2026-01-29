@@ -1,100 +1,115 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { createUserDto } from './DTO/create-user.dto';
 import { updateUserDto } from './DTO/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { join } from 'path';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ActiveUserGuard } from '../auth/guards/active-user.guard';
 
 @Controller('users')
 export class UsersController {
-    constructor (private readonly usersService: UsersService ){
+  constructor(private readonly usersService: UsersService) {
 
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  getAll() {
+    return this.usersService.getAll()
+  }
+
+  // Rutas específicas DEBEN ir ANTES de rutas con parámetros genéricos
+  @Get('/potentialMatches/:user_id')
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  getPotentialMatches(@Param('user_id') user_id: number) {
+    return this.usersService.getPotentialMatches(user_id)
+  }
+
+  @Get('/getCurrentMatches/:user_id')
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  getCurrentMatches(@Param('user_id') user_id: number) {
+    return this.usersService.getCurrentMatches(user_id)
+  }
+
+  @Get('/getUserAge/:user_id')
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  getUserAge(@Param('user_id') user_id: number) {
+    return this.usersService.getUserAge(user_id);
+  }
+
+  // Ruta genérica con parámetro - DEBE ir DESPUÉS de rutas específicas
+  @Get(':user_id')
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  findOne(@Param('user_id') user_id: Number) {
+    return this.usersService.findOne(Number(user_id))
+  }
+
+  @Post()
+  // 👇 Endpoint público para registro de nuevos usuarios
+  create(@Body() body: createUserDto) {
+    return this.usersService.create(body);
+  }
+
+  @Patch(':user_id')
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  update(@Param('user_id') user_id: number, @Body() body: updateUserDto) {
+    return this.usersService.update(user_id, body)
+  }
+
+  @Delete(':user_id')
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  delete(@Param('user_id') user_id: number) {
+    return this.usersService.delete(user_id)
+  }
+
+  @Patch('photo/:id')
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  @UseInterceptors(
+    FileInterceptor('photo', {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          cb(null, join(process.cwd(), 'user-pics'));
+        },
+        filename: (req, file, cb) => {
+          cb(null, `${req.params.id}.png`);
+        },
+      }),
+    }),
+  )
+  async uploadUserPhoto(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: number,
+  ) {
+    if (!file) {
+      throw new BadRequestException("No se recibió ningún archivo");
     }
 
-@Get()
-getAll(){
-    return this.usersService.getAll()
-}
+    const previousPhoto = await this.usersService.getUserPhotoPath(id);
 
-@Get(':user_id')
-findOne(@Param('user_id') user_id: Number){
-    return this.usersService.findOne(Number(user_id))
-}
+    const newPath = `/user-pics/${id}.png`;
 
-@Post()
-create(@Body() body:createUserDto) {
-    return this.usersService.create(body);
-}
+    await this.usersService.updateProfilePhoto(id, newPath);
 
-@Patch(':user_id')
-update(@Param('user_id') user_id: number, @Body() body:updateUserDto){
-    return this.usersService.update(user_id, body)}
-
-@Delete(':user_id')
-delete(@Param('user_id') user_id: number){
-    return this.usersService.delete(user_id)
-}
-
-@Get('/potentialMatches/:user_id')
-getPotentialMatches(@Param('user_id') user_id:number){
-    return this.usersService.getPotentialMatches(user_id)
-}
-
-@Get('/getCurrentMatches/:user_id')
-getCurrentMatches(@Param('user_id') user_id:number){
-    return this.usersService.getCurrentMatches(user_id)
-}
-
-@Get('/getUserAge/:user_id')
-getUserAge(@Param('user_id') user_id: number) {
-  return this.usersService.getUserAge(user_id);
-}
-
-@Patch('photo/:id')
-@UseInterceptors(
-  FileInterceptor('photo', {
-    storage: diskStorage({
-      destination: (req, file, cb) => {
-        cb(null, join(process.cwd(), 'user-pics')); 
-      },
-      filename: (req, file, cb) => {
-        cb(null, `${req.params.id}.png`);
-      },
-    }),
-  }),
-)
-async uploadUserPhoto(
-  @UploadedFile() file: Express.Multer.File,
-  @Param('id') id: number,
-) {
-  if (!file) {
-    throw new BadRequestException("No se recibió ningún archivo");
+    return {
+      message: "Foto actualizada correctamente",
+      path: newPath,
+    };
   }
+  @Delete('photo/:id')
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  async deleteUserPhoto(@Param('id') id: number) {
+    const previousPhoto = await this.usersService.getUserPhotoPath(id);
 
-  const previousPhoto = await this.usersService.getUserPhotoPath(id);
+    if (previousPhoto) {
+      this.usersService.deleteFileIfExists(previousPhoto);
+    }
 
-  const newPath = `/user-pics/${id}.png`;
+    await this.usersService.updateProfilePhoto(id, null);
 
-  await this.usersService.updateProfilePhoto(id, newPath);
-
-  return {
-    message: "Foto actualizada correctamente",
-    path: newPath,
-  };
-}
-@Delete('photo/:id')
-async deleteUserPhoto(@Param('id') id: number) {
-  const previousPhoto = await this.usersService.getUserPhotoPath(id);
-
-  if (previousPhoto) {
-    this.usersService.deleteFileIfExists(previousPhoto);
+    return { message: "Foto eliminada correctamente" };
   }
-
-  await this.usersService.updateProfilePhoto(id, null);
-
-  return { message: "Foto eliminada correctamente" };
-}
 
 
 

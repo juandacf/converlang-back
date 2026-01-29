@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(email: string, pass: string) {
     const user: UserValidation | null = await this.usersService.findByEmail(email);
@@ -18,6 +18,11 @@ export class AuthService {
 
     const match = await bcrypt.compare(pass, user.password_hash);
     if (!match) throw new UnauthorizedException('Invalid credentials');
+
+    // Validar que el usuario esté activo
+    if (!user.is_active) {
+      throw new UnauthorizedException('ACCOUNT_INACTIVE: Your account has been deactivated. Please contact converlang@gmail.com for more information.');
+    }
 
     const { password_hash, ...result } = user;
     return result;
