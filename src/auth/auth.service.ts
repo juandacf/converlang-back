@@ -19,8 +19,11 @@ export class AuthService {
     const match = await bcrypt.compare(pass, user.password_hash);
     if (!match) throw new UnauthorizedException('Invalid credentials');
 
-    // Validar que el usuario esté activo
-    if (!user.is_active) {
+    // Debug: Ver el valor exacto de is_active
+    console.log('🔍 DEBUG - is_active value:', user.is_active, 'Type:', typeof user.is_active);
+
+    // Validar que el usuario esté activo (maneja tanto boolean como string de PostgreSQL)
+    if (user.is_active === false || user.is_active === 'f' || user.is_active === 'false' || user.is_active === 0) {
       throw new UnauthorizedException('ACCOUNT_INACTIVE: Your account has been deactivated. Please contact converlang@gmail.com for more information.');
     }
 

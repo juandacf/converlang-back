@@ -27,7 +27,11 @@ export class ActiveUserGuard implements CanActivate {
             throw new UnauthorizedException('Usuario no encontrado');
         }
 
-        if (!dbUser.is_active) {
+        // Debug: Ver el valor exacto de is_active
+        console.log('🔍 GUARD DEBUG - is_active value:', dbUser.is_active, 'Type:', typeof dbUser.is_active);
+
+        // Validar que el usuario esté activo (maneja tanto boolean como string de PostgreSQL)
+        if (dbUser.is_active === false || dbUser.is_active === 'f' || dbUser.is_active === 'false' || dbUser.is_active === 0) {
             throw new UnauthorizedException('ACCOUNT_INACTIVE: Tu cuenta ha sido desactivada. Por favor contacta a converlang@gmail.com');
         }
 
