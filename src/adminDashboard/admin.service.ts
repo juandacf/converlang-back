@@ -189,22 +189,22 @@ export class AdminService {
 
   /**
    * Reactivar un usuario inactivo
-   * Actualiza is_active a true manteniendo el mismo ID
+   * Actualiza is_active a true y reinicia el contador de reportes
    * @param userId - ID del usuario a reactivar
    * @returns Mensaje de confirmación
    */
   async activateUser(userId: number) {
     try {
-      // Actualizar is_active a true
-      const query = `UPDATE users SET is_active = true WHERE id_user = $1 RETURNING id_user, first_name, last_name, email`;
+      // Actualizar is_active a true Y reiniciar contador de reportes a 0
+      const query = `UPDATE users SET is_active = true, report_quantity = 0 WHERE id_user = $1 RETURNING id_user, first_name, last_name, email`;
       const result = await this.db.query(query, [userId]);
 
       if (result && result[0]) {
         // Registrar en auditoría
-        await this.logAudit('users', userId.toString(), 'UPDATE', 'Usuario reactivado desde admin dashboard');
+        await this.logAudit('users', userId.toString(), 'UPDATE', 'Usuario reactivado desde admin dashboard - contador de reportes reiniciado');
 
         return {
-          message: `Usuario ${result[0].first_name} ${result[0].last_name} reactivado exitosamente`,
+          message: `Usuario ${result[0].first_name} ${result[0].last_name} reactivado exitosamente. Contador de reportes reiniciado.`,
           userId: userId,
           user: result[0]
         };
@@ -278,14 +278,12 @@ export class AdminService {
       `SELECT COUNT(*)::int as count FROM users`,
       `SELECT COUNT(*)::int as count FROM users WHERE is_active = true`,
       `SELECT COUNT(*)::int as count FROM user_matches`,
-      `SELECT COUNT(*)::int as count FROM sessions WHERE end_time IS NOT NULL`,
-      `SELECT COUNT(*)::int as count FROM teaching_sessions`,
-      `SELECT COUNT(*)::int as count FROM exchange_sessions`
+      `SELECT COUNT(*)::int as count FROM sessions WHERE end_time IS NOT NULL`
     ];
 
     const results = await Promise.all(queries.map(q => this.db.query(q)));
 
-    const [totalUsers, activeUsers, totalMatches, completedSessions, teachingCount, exchangeCount] = results;
+    const [totalUsers, activeUsers, totalMatches, completedSessions] = results;
 
     return {
       total_users: totalUsers[0].count,
@@ -297,8 +295,8 @@ export class AdminService {
       growth_users: 12,
       growth_active: 8,
       sessions_breakdown: {
-        teaching: teachingCount[0].count,
-        exchange: exchangeCount[0].count
+        teaching: 0,
+        exchange: 0
       }
     };
   }
@@ -420,27 +418,9 @@ export class AdminService {
    * @returns Últimas 6 reseñas
    */
   async getRecentReviews() {
-    const query = `
-      SELECT 
-        s.session_id,
-        u.first_name || ' ' || u.last_name as user_name,
-        COALESCE(ts.student_rating, es.session_rating_user1) as rating,
-        COALESCE(ts.teacher_notes, es.feedback_user1) as comment,
-        CASE 
-            WHEN ts.session_id IS NOT NULL THEN 'teaching' 
-            ELSE 'exchange' 
-        END as session_type
-      FROM sessions s
-      JOIN users u ON s.id_user1 = u.id_user 
-      LEFT JOIN teaching_sessions ts ON s.session_id = ts.session_id
-      LEFT JOIN exchange_sessions es ON s.session_id = es.session_id
-      WHERE s.end_time IS NOT NULL 
-        AND (ts.student_rating IS NOT NULL OR es.session_rating_user1 IS NOT NULL)
-      ORDER BY s.end_time DESC
-      LIMIT 6
-    `;
-    const result = await this.db.query(query);
-    return result;
+    // Tablas teaching_sessions y exchange_sessions no están en uso
+    // Retornamos array vacío hasta que se implemente el sistema de reseñas
+    return [];
   }
 
   /**

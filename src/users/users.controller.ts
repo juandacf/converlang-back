@@ -39,6 +39,13 @@ export class UsersController {
     return this.usersService.getUserAge(user_id);
   }
 
+  // Endpoint para reportar usuario - DEBE ir ANTES de rutas genéricas
+  @Post('report/:user_id')
+  @UseGuards(JwtAuthGuard, ActiveUserGuard)
+  reportUser(@Param('user_id') user_id: number) {
+    return this.usersService.reportUser(user_id);
+  }
+
   // Ruta genérica con parámetro - DEBE ir DESPUÉS de rutas específicas
   @Get(':user_id')
   @UseGuards(JwtAuthGuard, ActiveUserGuard)

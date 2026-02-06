@@ -146,6 +146,19 @@ export class UsersService {
     }
   }
 
-
+  async reportUser(reportedUserId: number): Promise<{
+    o_id_user: number;
+    o_first_name: string;
+    o_last_name: string;
+    o_email: string;
+    o_report_quantity: number;
+    o_is_active: boolean;
+  }> {
+    const result = await this.db.query(
+      'SELECT * FROM fun_generate_report($1)',
+      [reportedUserId]
+    );
+    return result[0];
+  }
 
 }
