@@ -21,6 +21,7 @@ import { AdminModule } from './adminDashboard/admin.module';
 import { CallModule } from './call/call.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { UserRolesModule } from './user_roles/user_roles.module';
+import { NotificationsModule } from './notifications/notifications.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -38,7 +39,8 @@ import { UserRolesModule } from './user_roles/user_roles.module';
     AdminModule,
     CallModule,
     PreferencesModule,
-    UserRolesModule
+    UserRolesModule,
+    NotificationsModule
   ],
   providers: [
     {

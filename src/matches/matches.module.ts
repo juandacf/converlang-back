@@ -4,13 +4,16 @@ import { MatchesService } from './matches.service';
 import { DatabaseService } from 'src/database/database.service';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     forwardRef(() => AuthModule),
-    forwardRef(() => UsersModule)
+    forwardRef(() => UsersModule),
+    forwardRef(() => NotificationsModule)
   ],
   controllers: [MatchesController],
   providers: [MatchesService, DatabaseService]
 })
 export class MatchesModule { }
+
