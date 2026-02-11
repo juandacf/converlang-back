@@ -22,5 +22,6 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy() {
     await this.pool.end();
+
   }
 }

@@ -275,10 +275,10 @@ export class AdminService {
    */
   async getStats() {
     const queries = [
-      `SELECT COUNT(*)::int as count FROM users`,
-      `SELECT COUNT(*)::int as count FROM users WHERE is_active = true`,
-      `SELECT COUNT(*)::int as count FROM user_matches`,
-      `SELECT COUNT(*)::int as count FROM sessions WHERE end_time IS NOT NULL`
+      `SELECT COUNT(id_user)::int as count FROM users`,
+      `SELECT COUNT(id_user)::int as count FROM users WHERE is_active = true`,
+      `SELECT COUNT(match_id)::int as count FROM user_matches`,
+      `SELECT COUNT(session_id)::int as count FROM sessions WHERE end_time IS NOT NULL`
     ];
 
     const results = await Promise.all(queries.map(q => this.db.query(q)));
@@ -316,8 +316,8 @@ export class AdminService {
       )
       SELECT 
           TO_CHAR(ld.day, 'Dy') as name,
-          (SELECT COUNT(*)::int FROM user_matches m WHERE m.match_time::date = ld.day) as matches,
-          (SELECT COUNT(*)::int FROM sessions s WHERE s.start_time::date = ld.day) as sesiones
+          (SELECT COUNT(m.match_id)::int FROM user_matches m WHERE m.match_time::date = ld.day) as matches,
+          (SELECT COUNT(s.session_id)::int FROM sessions s WHERE s.start_time::date = ld.day) as sesiones
       FROM last_days ld
       ORDER BY ld.day ASC;
     `;
@@ -341,7 +341,7 @@ export class AdminService {
       )
       SELECT 
           TO_CHAR(ld.day, 'Dy') as name,
-          (SELECT COUNT(*)::int FROM users u WHERE u.created_at::date = ld.day) as nuevos_usuarios
+          (SELECT COUNT(u.id_user)::int FROM users u WHERE u.created_at::date = ld.day) as nuevos_usuarios
       FROM last_days ld
       ORDER BY ld.day ASC;
     `;
@@ -357,13 +357,13 @@ export class AdminService {
   async getUserDistribution() {
     const queries = [
       // 1. Usuarios Activos (Rol user + is_active = true)
-      `SELECT COUNT(*)::int as count FROM users WHERE role_code = 'user' AND is_active = true`,
+      `SELECT COUNT(id_user)::int as count FROM users WHERE role_code = 'user' AND is_active = true`,
       // 2. Usuarios Inactivos (Cualquier rol + is_active = false)
-      `SELECT COUNT(*)::int as count FROM users WHERE is_active = false`,
+      `SELECT COUNT(id_user)::int as count FROM users WHERE is_active = false`,
       // 3. Teachers (Rol teacher)
-      `SELECT COUNT(*)::int as count FROM users WHERE role_code = 'teacher'`,
+      `SELECT COUNT(id_user)::int as count FROM users WHERE role_code = 'teacher'`,
       // 4. Administradores (Rol admin)
-      `SELECT COUNT(*)::int as count FROM users WHERE role_code = 'admin'`
+      `SELECT COUNT(id_user)::int as count FROM users WHERE role_code = 'admin'`
     ];
 
     const results = await Promise.all(queries.map(q => this.db.query(q)));
@@ -434,7 +434,7 @@ export class AdminService {
         SELECT 
           COALESCE(
             (COUNT(DISTINCT CASE WHEN s.end_time IS NOT NULL THEN s.id_user1 END)::float / 
-             NULLIF((SELECT COUNT(*)::float FROM users WHERE is_active = true), 0) * 100), 
+             NULLIF((SELECT COUNT(id_user)::float FROM users WHERE is_active = true), 0) * 100), 
             0
           )::numeric(5,2) as current_rate
         FROM sessions s;
@@ -445,7 +445,7 @@ export class AdminService {
         SELECT 
           COALESCE(
             (COUNT(CASE WHEN email_verified THEN 1 END)::float / 
-             NULLIF(COUNT(*)::float, 0) * 100), 
+             NULLIF(COUNT(id_user)::float, 0) * 100), 
             0
           )::numeric(5,2) as current_rate
         FROM users
@@ -454,7 +454,7 @@ export class AdminService {
 
       // 3. Sesiones Completadas: Total de sesiones finalizadas
       const sessionsQuery = `
-        SELECT COUNT(*)::int as current_count
+        SELECT COUNT(session_id)::int as current_count
         FROM sessions
         WHERE end_time IS NOT NULL;
       `;
