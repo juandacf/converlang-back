@@ -24,6 +24,6 @@ import { ActiveUserGuard } from './guards/active-user.guard';
     ActiveUserGuard
   ],
   controllers: [AuthController],
-  exports: [ActiveUserGuard]
+  exports: [ActiveUserGuard, AuthService]
 })
 export class AuthModule { }

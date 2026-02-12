@@ -1,21 +1,21 @@
 export type User = {
-    id_user: Number;
-    first_name: String;
-    last_name: String;
-    email: String;
-    gender_id: Number;
-    birth_date: String;
-    country_id: String;
-    profile_photo: String;
-    native_lang_id: String;
-    target_lang_id: String;
-    match_quantity: Number;
-    bank_id: String;
-    role_code: String;
-    description: Text;
+    id_user: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    gender_id: number;
+    birth_date: string;
+    country_id: string;
+    profile_photo: string;
+    native_lang_id: string;
+    target_lang_id: string;
+    match_quantity: number;
+    bank_id: string;
+    role_code: string;
+    description: string;
     is_active: boolean | string | number;  // Puede venir como boolean, 't'/'f', o 0/1 desde PostgreSQL
     email_verified: boolean;
-    last_login: String;
-    created_at: String;
-    updated_at: String;
+    last_login: string;
+    created_at: string;
+    updated_at: string;
 }

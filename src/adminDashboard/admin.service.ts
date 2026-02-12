@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { AuthService } from '../auth/auth.service';
 import { CreateUserAdminDto } from './DTO/create-user-admin.dto';
 import { UpdateUserAdminDto } from './DTO/update-user-admin.dto';
 import { ChangePasswordDto } from './DTO/change-password.dto';
@@ -13,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 export class AdminService {
   constructor(
     private readonly db: DatabaseService,
+    private readonly authService: AuthService,
   ) { }
 
   // ========================================
@@ -291,7 +293,7 @@ export class AdminService {
       total_matches: totalMatches[0].count,
       total_sessions: completedSessions[0].count,
       visitors_count: Math.floor(totalUsers[0].count * 1.5),
-      logged_in_count: Math.floor(activeUsers[0].count * 0.3),
+      logged_in_count: this.authService.getOnlineUsersCount(),
       growth_users: 12,
       growth_active: 8,
       sessions_breakdown: {
