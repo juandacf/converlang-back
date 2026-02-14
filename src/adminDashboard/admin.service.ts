@@ -60,7 +60,7 @@ export class AdminService {
 
       if (result && result[0]) {
         // Registrar en auditoría
-        await this.logAudit('users', result[0].id_user.toString(), 'CREATE', 'Usuario creado desde admin dashboard');
+        await this.logAudit('users', result[0].id_user.toString(), 'INSERT', 'Usuario creado desde admin dashboard');
 
         // No retornar el password_hash
         const { password_hash, ...userWithoutPassword } = result[0];
@@ -172,7 +172,7 @@ export class AdminService {
 
       if (result && result[0]) {
         // Registrar en auditoría
-        await this.logAudit('users', userId.toString(), 'CHANGE_PASSWORD', 'Contraseña actualizada desde admin dashboard');
+        await this.logAudit('users', userId.toString(), 'UPDATE', 'Contraseña actualizada desde admin dashboard');
 
         return {
           message: result[0].update_user_password,
