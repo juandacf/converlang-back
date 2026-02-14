@@ -1,31 +1,33 @@
-import {  IsBoolean, IsDateString, IsEmail, IsNotEmpty, IsNumber, isNumber, IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+import { IsBoolean, IsDateString, IsEmail, IsNotEmpty, IsNumber, isNumber, IsString, Matches, MaxLength, MinLength, minLength, ValidateIf } from "class-validator";
 
 
 export class createUserDto {
 
-    @IsString()
-    @MaxLength(100)
-    @IsNotEmpty()
-    first_name: String
+  @IsString()
+  @MaxLength(100)
+  @MinLength(3)
+  @IsNotEmpty()
+  first_name: String
 
-    @IsString()
-    @MaxLength(100)
-    @IsNotEmpty()
-    last_name: String
+  @IsString()
+  @MaxLength(100)
+  @MinLength(3)
+  @IsNotEmpty()
+  last_name: String
 
 
-    @IsString()
-    @MaxLength(150)
-    @IsNotEmpty()
-    @IsEmail()
-    @Matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/, {
+  @IsString()
+  @MaxLength(150)
+  @IsNotEmpty()
+  @IsEmail()
+  @Matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/, {
     message: 'El correo debe tener un formato válido (ejemplo@dominio.com)',
   })
-    email: String
+  email: String
 
   @IsString()
   @MaxLength(255)
-  password :string;
+  password: string;
 
   @IsNumber()
   gender_id: Number;
@@ -59,12 +61,12 @@ export class createUserDto {
   @IsString()
   @MaxLength(20)
   @IsNotEmpty()
-  role_code : String;
+  role_code: String;
 
   @IsString()
   @IsNotEmpty()
-  description : String;
-  
+  description: String;
+
 
 
 }
