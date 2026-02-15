@@ -1,34 +1,37 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { TeacherProfilesService } from './teacher-profiles.service';
 import { CreateTeacherProfileDto } from './DTO/create-teacher-profile.dto';
 import { UpdateTeacherProfileDto } from './DTO/update-teacher-profile.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ActiveUserGuard } from '../auth/guards/active-user.guard';
 
 @Controller('teacher-profiles')
+@UseGuards(JwtAuthGuard, ActiveUserGuard)
 export class TeacherProfilesController {
-     constructor(private readonly teacherProfilesService: TeacherProfilesService) {}
-    
-     @Get()
-     getAll() {
-        return this.teacherProfilesService.getAll();
-     }
+   constructor(private readonly teacherProfilesService: TeacherProfilesService) { }
 
-     @Get(':id')
-     findOne(@Param('id', ParseIntPipe) id: number){
-        return this.teacherProfilesService.findOne(id);
-     }
+   @Get()
+   getAll() {
+      return this.teacherProfilesService.getAll();
+   }
 
-     @Post()
-     create(@Body() body: CreateTeacherProfileDto){
-        return this.teacherProfilesService.create(body);
-     }
+   @Get(':id')
+   findOne(@Param('id', ParseIntPipe) id: number) {
+      return this.teacherProfilesService.findOne(id);
+   }
 
-     @Patch(':id')
-     update(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateTeacherProfileDto) {
-        return this.teacherProfilesService.update(id, body);
-     }
+   @Post()
+   create(@Body() body: CreateTeacherProfileDto) {
+      return this.teacherProfilesService.create(body);
+   }
 
-     @Delete(':id')
-     delete(@Param('id', ParseIntPipe) id: number){
-         return this.teacherProfilesService.delete(id);
-     }
+   @Patch(':id')
+   update(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateTeacherProfileDto) {
+      return this.teacherProfilesService.update(id, body);
+   }
+
+   @Delete(':id')
+   delete(@Param('id', ParseIntPipe) id: number) {
+      return this.teacherProfilesService.delete(id);
+   }
 }

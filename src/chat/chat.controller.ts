@@ -1,9 +1,12 @@
-import { Controller, Get, Param, Post, Body } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ActiveUserGuard } from '../auth/guards/active-user.guard';
 
 @Controller('chats')
+@UseGuards(JwtAuthGuard, ActiveUserGuard)
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(private readonly chatService: ChatService) { }
 
   // Obtener la lista de chats
   @Get('list/:userId')

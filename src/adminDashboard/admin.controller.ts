@@ -9,18 +9,22 @@ import {
   Body,
   Query,
   ParseIntPipe,
-  ParseBoolPipe
+  ParseBoolPipe,
+  UseGuards
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateUserAdminDto } from './DTO/create-user-admin.dto';
 import { UpdateUserAdminDto } from './DTO/update-user-admin.dto';
 import { ChangePasswordDto } from './DTO/change-password.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ActiveUserGuard } from '../auth/guards/active-user.guard';
 
 /**
  * Controlador del panel de administración
  * Gestiona usuarios, estadísticas y reportes
  */
 @Controller('admin')
+@UseGuards(JwtAuthGuard, ActiveUserGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) { }
 
