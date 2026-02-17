@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { User } from './DTO/user.type';
 import { createUserDto } from './DTO/create-user.dto';
@@ -29,24 +29,38 @@ export class UsersService {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(user.password, salt);
 
-    const result = await this.db.query<User>(
-      'SELECT * FROM fun_insert_usuarios($1, $2, $3, $4, $5, $6, $7, NULL, $8, $9, 0, $10, $11)',
-      [
-        user.first_name,
-        user.last_name,
-        user.email,
-        passwordHash,         // <-- AQUÍ ENTRARÁ EL HASH, NO LA CONTRASEÑA
-        user.gender_id,
-        user.birth_date,
-        user.country_id,
-        user.native_lang_id,
-        user.target_lang_id,
-        user.description,
-        user.role_code,
-      ]
-    );
+    try {
+      const result = await this.db.query<User>(
+        'SELECT * FROM fun_insert_usuarios($1, $2, $3, $4, $5, $6, $7, NULL, $8, $9, 0, $10, $11)',
+        [
+          user.first_name,
+          user.last_name,
+          user.email,
+          passwordHash,         // <-- AQUÍ ENTRARÁ EL HASH, NO LA CONTRASEÑA
+          user.gender_id,
+          user.birth_date,
+          user.country_id,
+          user.native_lang_id,
+          user.target_lang_id,
+          user.description,
+          user.role_code,
+        ]
+      );
 
-    return result[0];
+      return result[0];
+    } catch (error) {
+      // Manejar errores de clave duplicada (correo ya registrado)
+      if (error.code === '23505' || error.message?.includes('ya está registrado')) {
+        throw new ConflictException(
+          error.message?.replace('Error: ', '') || 'El correo electrónico ya está registrado'
+        );
+      }
+
+      // Manejar otros errores lanzados por la base de datos (RAISE EXCEPTION)
+      throw new BadRequestException(
+        error.message?.replace('Error: ', '') || 'Error al crear el usuario'
+      );
+    }
   }
 
 
