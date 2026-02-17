@@ -362,9 +362,7 @@ export class AdminService {
       `SELECT COUNT(id_user)::int as count FROM users WHERE role_code = 'user' AND is_active = true`,
       // 2. Usuarios Inactivos (Cualquier rol + is_active = false)
       `SELECT COUNT(id_user)::int as count FROM users WHERE is_active = false`,
-      // 3. Teachers (Rol teacher)
-      `SELECT COUNT(id_user)::int as count FROM users WHERE role_code = 'teacher'`,
-      // 4. Administradores (Rol admin)
+      // 3. Administradores (Rol admin)
       `SELECT COUNT(id_user)::int as count FROM users WHERE role_code = 'admin'`
     ];
 
@@ -373,8 +371,7 @@ export class AdminService {
     return [
       { name: 'Usuarios Activos', value: results[0][0].count, color: '#107C10' },
       { name: 'Usuarios Inactivos', value: results[1][0].count, color: '#D13438' },
-      { name: 'Teachers', value: results[2][0].count, color: '#0078D4' },
-      { name: 'Administradores', value: results[3][0].count, color: '#8764B8' }
+      { name: 'Administradores', value: results[2][0].count, color: '#8764B8' }
     ];
   }
 
