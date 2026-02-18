@@ -15,7 +15,7 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly chatService: ChatService) {}
+  constructor(private readonly chatService: ChatService) { }
 
   private normalizeMatchId(matchId: any): number {
     // Soporta: 12, "12", "match_12"
@@ -42,34 +42,34 @@ export class ChatGateway {
   ) {
     const room = this.roomName(matchId);
     client.join(room);
-    console.log(`Cliente ${client.id} unido a sala: ${room}`);
+
     return { ok: true, room };
   }
 
   // ===============================================
   // 2. Enviar mensaje a una sala
   // ===============================================
-@SubscribeMessage('sendMessage')
-async handleSendMessage(@MessageBody() data: any) {
-  const { matchId, senderId, message } = data;
-  const numericId = Number(matchId);
+  @SubscribeMessage('sendMessage')
+  async handleSendMessage(@MessageBody() data: any) {
+    const { matchId, senderId, message } = data;
+    const numericId = Number(matchId);
 
-  const savedMessage = await this.chatService.sendMessage(
-    numericId,
-    Number(senderId),
-    message,
-  );
+    const savedMessage = await this.chatService.sendMessage(
+      numericId,
+      Number(senderId),
+      message,
+    );
 
-  // FORZAR FORMA CONSISTENTE
-  const payload = {
-    message_id: savedMessage?.message_id ?? savedMessage?.id ?? Date.now(),
-    match_id: numericId,
-    sender_id: Number(senderId),
-    message: savedMessage?.message ?? message,
-    created_at: savedMessage?.created_at ?? new Date().toISOString(),
-  };
+    // FORZAR FORMA CONSISTENTE
+    const payload = {
+      message_id: savedMessage?.message_id ?? savedMessage?.id ?? Date.now(),
+      match_id: numericId,
+      sender_id: Number(senderId),
+      message: savedMessage?.message ?? message,
+      created_at: savedMessage?.created_at ?? new Date().toISOString(),
+    };
 
-  this.server.to(`match_${numericId}`).emit('newMessage', payload);
-}
+    this.server.to(`match_${numericId}`).emit('newMessage', payload);
+  }
 
 }

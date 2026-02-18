@@ -31,7 +31,7 @@ export class NotificationsGateway {
         existingClients.push(client.id);
         this.connectedUsers.set(userId, existingClients);
 
-        console.log(`Usuario ${userId} unido a sala de notificaciones: ${room}`);
+
         return { ok: true, room };
     }
 
@@ -51,7 +51,7 @@ export class NotificationsGateway {
     // Emitir notificación a un usuario específico
     sendNotification(userId: number, notification: any) {
         const room = `user_notifications_${userId}`;
-        console.log(`Emitiendo notificación a ${room}:`, notification);
+
         this.server.to(room).emit('newNotification', notification);
     }
 

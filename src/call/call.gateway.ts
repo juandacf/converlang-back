@@ -24,7 +24,7 @@ export class CallGateway {
   ) {
     const room = `call_${Number(matchId)}`;
     client.join(room);
-    console.log(`📞 Cliente ${client.id} unido a sala de llamada: ${room}`);
+
     return { ok: true, room };
   }
 
@@ -39,7 +39,7 @@ export class CallGateway {
     const matchId = Number(data.matchId);
     const room = `call_${matchId}`;
 
-    console.log(`📞 Solicitud de llamada enviada a sala ${room}`);
+
 
     // IMPORTANT: solo a los demás, no al emisor
     client.to(room).emit('incomingCall', {
@@ -138,20 +138,20 @@ export class CallGateway {
   }
 
   // ============================================
-// 7. Terminar llamada
-// ============================================
-@SubscribeMessage('endCall')
-handleEndCall(
-  @MessageBody() data: { matchId: number },
-  @ConnectedSocket() client: Socket,
-) {
-  const matchId = Number(data.matchId);
-  const room = `call_${matchId}`;
+  // 7. Terminar llamada
+  // ============================================
+  @SubscribeMessage('endCall')
+  handleEndCall(
+    @MessageBody() data: { matchId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const matchId = Number(data.matchId);
+    const room = `call_${matchId}`;
 
-  // Notificar al otro usuario
-  client.to(room).emit('callEnded');
+    // Notificar al otro usuario
+    client.to(room).emit('callEnded');
 
-  return { ok: true };
-}
+    return { ok: true };
+  }
 
 }

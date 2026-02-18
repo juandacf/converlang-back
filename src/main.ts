@@ -41,7 +41,7 @@ async function bootstrap() {
   const port = process.env.APPPORT ?? 3000;
   await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 Backend HTTPS corriendo en https://0.0.0.0:${port}`);
+
 }
 
 bootstrap();
