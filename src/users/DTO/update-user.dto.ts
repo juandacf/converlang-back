@@ -1,14 +1,14 @@
-import { 
-  IsDateString, 
-  IsEmail, 
-  IsNotEmpty, 
-  IsNumber, 
-  IsOptional, 
-  IsString, 
-  Matches, 
-  MaxLength, 
-  Min, 
-  Max, 
+import {
+  IsDateString,
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  Min,
+  Max,
   ValidateIf
 } from "class-validator";
 
@@ -35,15 +35,15 @@ export class updateUserDto {
   @IsOptional()
   gender_id?: number;
 
-    @IsDateString()
-    @IsNotEmpty()
-    @ValidateIf((obj) => {
-      const birth = new Date(obj.birth_date);
-      const today = new Date();
-      const minDate = new Date(today.getFullYear() - 15, today.getMonth(), today.getDate());
-      return birth <= minDate;
-    })
-    birth_date: string;
+  @IsDateString()
+  @IsNotEmpty()
+  @ValidateIf((obj) => {
+    const birth = new Date(obj.birth_date);
+    const today = new Date();
+    const minDate = new Date(today.getFullYear() - 15, today.getMonth(), today.getDate());
+    return birth <= minDate;
+  })
+  birth_date: string;
 
   @IsString()
   @MaxLength(5)
@@ -70,10 +70,6 @@ export class updateUserDto {
   @Max(100)
   match_quantity: number;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(5)
-  bank_id?: string;
 
   @IsOptional()
   @IsString()

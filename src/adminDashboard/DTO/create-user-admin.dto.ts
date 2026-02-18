@@ -76,10 +76,6 @@ export class CreateUserAdminDto {
     @IsOptional()
     match_quantity?: number;
 
-    @IsOptional()
-    @IsString()
-    @MaxLength(5)
-    bank_id?: string;
 
     @IsOptional()
     @IsString()

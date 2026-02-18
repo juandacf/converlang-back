@@ -105,11 +105,22 @@ export class UsersService {
 
 
   async update(id_user: number, user: updateUserDto): Promise<string> {
-    const result = await this.db.query<{ update_user: string }>(
-      `SELECT update_user(
-          $1, $2, $3, $4, $5, $6, $7, 
-          $8, $9, $10, $11, $12
-       ) AS update_user`,
+    const result = await this.db.query<{ first_name: string }>(
+      `UPDATE users SET
+          first_name = $2,
+          last_name = $3,
+          email = $4,
+          gender_id = $5,
+          birth_date = $6,
+          country_id = $7,
+          profile_photo = COALESCE($8, profile_photo),
+          native_lang_id = $9,
+          target_lang_id = $10,
+          match_quantity = $11,
+          description = $12,
+          updated_at = NOW()
+       WHERE id_user = $1
+       RETURNING first_name`,
       [
         id_user,
         user.first_name,
@@ -126,7 +137,7 @@ export class UsersService {
       ]
     );
 
-    return result[0].update_user;
+    return `Usuario ${result[0].first_name} actualizado correctamente`;
   }
 
   async delete(id_user: number): Promise<String> {

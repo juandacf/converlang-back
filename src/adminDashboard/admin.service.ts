@@ -35,7 +35,7 @@ export class AdminService {
       // Llamar a la función de BD fun_insert_usuarios
       const query = `
         SELECT * FROM fun_insert_usuarios(
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
         )
       `;
 
@@ -51,7 +51,6 @@ export class AdminService {
         dto.native_lang_id.toUpperCase(),
         dto.target_lang_id.toUpperCase(),
         dto.match_quantity || 10,
-        dto.bank_id?.toUpperCase() || null,
         dto.description || null,
         dto.role_code.toLowerCase()
       ];
@@ -83,8 +82,25 @@ export class AdminService {
    */
   async updateUser(userId: number, dto: UpdateUserAdminDto) {
     try {
-      // Llamar a la función de BD update_user
-      const query = `SELECT update_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`;
+      // Usar UPDATE directo en lugar de la función almacenada para evitar problemas de firmas
+      // y asegurar que todos los campos (incluyendo bank_id) se actualicen correctamente
+      const query = `
+        UPDATE users SET
+          first_name = $2,
+          last_name = $3,
+          email = $4,
+          gender_id = $5,
+          birth_date = $6,
+          country_id = $7,
+          profile_photo = COALESCE($8, profile_photo),
+          native_lang_id = $9,
+          target_lang_id = $10,
+          match_quantity = $11,
+          description = $12,
+          updated_at = NOW()
+        WHERE id_user = $1
+        RETURNING id_user, first_name, last_name, email
+      `;
 
       const params = [
         userId,
@@ -98,7 +114,6 @@ export class AdminService {
         dto.native_lang_id.toUpperCase(),
         dto.target_lang_id.toUpperCase(),
         dto.match_quantity,
-        dto.bank_id?.toUpperCase() || null,
         dto.description || null
       ];
 
@@ -109,8 +124,9 @@ export class AdminService {
         await this.logAudit('users', userId.toString(), 'UPDATE', 'Usuario actualizado desde admin dashboard');
 
         return {
-          message: result[0].update_user,
-          userId: userId
+          message: 'Usuario actualizado correctamente',
+          userId: userId,
+          user: result[0]
         };
       }
 
@@ -119,6 +135,7 @@ export class AdminService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+      console.error('Error updating user:', error);
       throw new BadRequestException(error.message || 'Error al actualizar usuario');
     }
   }

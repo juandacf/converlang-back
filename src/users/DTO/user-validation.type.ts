@@ -11,7 +11,6 @@ export type UserValidation = {
     native_lang_id: string;
     target_lang_id: string;
     match_quantity: number;
-    bank_id: string;
     role_code: string;
     description: string;
     is_active: boolean | string | number;  // Puede venir como boolean, 't'/'f', o 0/1 desde PostgreSQL

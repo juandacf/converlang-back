@@ -67,10 +67,6 @@ export class UpdateUserAdminDto {
     @Max(100)
     match_quantity: number;
 
-    @IsOptional()
-    @IsString()
-    @MaxLength(5)
-    bank_id?: string;
 
     @IsOptional()
     @IsString()

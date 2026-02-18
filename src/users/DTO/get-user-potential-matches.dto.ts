@@ -10,7 +10,7 @@ export type potentialMatches = {
     native_lang_id: string;
     target_lang_id: string;
     match_quantity: number;
-    bank_id: string;
+
     role_code: string;
     description: string;
     is_active: boolean;
@@ -18,5 +18,5 @@ export type potentialMatches = {
     last_login: string;
     created_at: string;
     updated_at: string;
-    age: number;        
+    age: number;
 }
