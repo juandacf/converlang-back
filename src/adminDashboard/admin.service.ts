@@ -297,19 +297,20 @@ export class AdminService {
       `SELECT COUNT(id_user)::int as count FROM users`,
       `SELECT COUNT(id_user)::int as count FROM users WHERE is_active = true`,
       `SELECT COUNT(match_id)::int as count FROM user_matches`,
-      `SELECT COUNT(session_id)::int as count FROM sessions WHERE end_time IS NOT NULL`
+      `SELECT COUNT(session_id)::int as count FROM sessions WHERE end_time IS NOT NULL`,
+      `SELECT COUNT(message_id)::int as count FROM chat_logs WHERE timestamp::date = CURRENT_DATE`
     ];
 
     const results = await Promise.all(queries.map(q => this.db.query(q)));
 
-    const [totalUsers, activeUsers, totalMatches, completedSessions] = results;
+    const [totalUsers, activeUsers, totalMatches, completedSessions, todayMessages] = results;
 
     return {
       total_users: totalUsers[0].count,
       active_users: activeUsers[0].count,
       total_matches: totalMatches[0].count,
       total_sessions: completedSessions[0].count,
-      visitors_count: Math.floor(totalUsers[0].count * 1.5),
+      messages_today: todayMessages[0].count,
       logged_in_count: this.authService.getOnlineUsersCount(),
       growth_users: 12,
       growth_active: 8,
@@ -445,28 +446,14 @@ export class AdminService {
    */
   async getMetrics() {
     try {
-      // 1. Tasa de Conversión: % de usuarios que han completado al menos una sesión
-      const conversionQuery = `
-        SELECT 
-          COALESCE(
-            (COUNT(DISTINCT CASE WHEN s.end_time IS NOT NULL THEN s.id_user1 END)::float / 
-             NULLIF((SELECT COUNT(id_user)::float FROM users WHERE is_active = true), 0) * 100), 
-            0
-          )::numeric(5,2) as current_rate
-        FROM sessions s;
+      // 1. Total Matches: Cantidad total de matches en la plataforma
+      const matchesQuery = `
+        SELECT COUNT(match_id)::int as total_matches
+        FROM user_matches;
       `;
 
-      // 2. Usuarios Verificados: % de usuarios con email verificado
-      const verifiedQuery = `
-        SELECT 
-          COALESCE(
-            (COUNT(CASE WHEN email_verified THEN 1 END)::float / 
-             NULLIF(COUNT(id_user)::float, 0) * 100), 
-            0
-          )::numeric(5,2) as current_rate
-        FROM users
-        WHERE is_active = true;
-      `;
+      // 2. Usuarios Online: Usuarios conectados en este momento
+      const onlineCount = this.authService.getOnlineUsersCount();
 
       // 3. Sesiones Completadas: Total de sesiones finalizadas
       const sessionsQuery = `
@@ -483,16 +470,14 @@ export class AdminService {
         WHERE end_time IS NOT NULL;
       `;
 
-      // Ejecutar todas las consultas en paralelo
-      const [conversionResult, verifiedResult, sessionsResult, avgTimeResult] = await Promise.all([
-        this.db.query(conversionQuery),
-        this.db.query(verifiedQuery),
+      // Ejecutar consultas en paralelo
+      const [matchesResult, sessionsResult, avgTimeResult] = await Promise.all([
+        this.db.query(matchesQuery),
         this.db.query(sessionsQuery),
         this.db.query(avgTimeQuery)
       ]);
 
-      const conversionData = conversionResult[0] || { current_rate: '0.00' };
-      const verifiedData = verifiedResult[0] || { current_rate: '0.00' };
+      const matchesData = matchesResult[0] || { total_matches: 0 };
       const sessionsData = sessionsResult[0] || { current_count: 0 };
       const avgTimeData = avgTimeResult[0] || { current_avg: '0.0' };
 
@@ -505,57 +490,56 @@ export class AdminService {
       };
 
       return {
-        conversion_rate: {
-          label: 'Tasa de Conversión',
-          value: `${conversionData.current_rate}%`,
-          trend: '+0%',
+        total_matches: {
+          label: 'Total Matches',
+          description: 'Conexiones totales entre usuarios',
+          value: matchesData.total_matches,
           color: 'text-green-600'
         },
-        verified_users: {
-          label: 'Usuarios Verificados',
-          value: `${verifiedData.current_rate}%`,
-          trend: '+0%',
+        online_users: {
+          label: 'Usuarios Online',
+          description: 'Conectados en este momento',
+          value: onlineCount,
           color: 'text-blue-600'
         },
         completed_sessions: {
           label: 'Sesiones Completadas',
+          description: 'Videollamadas finalizadas',
           value: sessionsData.current_count,
-          trend: '+0%',
           color: 'text-purple-600'
         },
         average_time: {
-          label: 'Tiempo Promedio',
+          label: 'Tiempo Promedio por Llamada',
+          description: 'Duración media de cada videollamada',
           value: formatTime(parseFloat(avgTimeData.current_avg.toString())),
-          trend: '+0%',
           color: 'text-orange-600'
         }
       };
     } catch (error) {
       console.error('Error calculating metrics:', error);
-      // Return default values instead of throwing
       return {
-        conversion_rate: {
-          label: 'Tasa de Conversión',
-          value: '0%',
-          trend: '+0%',
+        total_matches: {
+          label: 'Total Matches',
+          description: 'Conexiones totales entre usuarios',
+          value: 0,
           color: 'text-green-600'
         },
-        verified_users: {
-          label: 'Usuarios Verificados',
-          value: '0%',
-          trend: '+0%',
+        online_users: {
+          label: 'Usuarios Online',
+          description: 'Conectados en este momento',
+          value: 0,
           color: 'text-blue-600'
         },
         completed_sessions: {
           label: 'Sesiones Completadas',
+          description: 'Videollamadas finalizadas',
           value: 0,
-          trend: '+0%',
           color: 'text-purple-600'
         },
         average_time: {
-          label: 'Tiempo Promedio',
+          label: 'Tiempo Promedio por Llamada',
+          description: 'Duración media de cada videollamada',
           value: '0min',
-          trend: '+0%',
           color: 'text-orange-600'
         }
       };

@@ -22,6 +22,7 @@ import { CallModule } from './call/call.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { UserRolesModule } from './user_roles/user_roles.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { MetricsModule } from './metrics/metrics.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -40,7 +41,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     CallModule,
     PreferencesModule,
     UserRolesModule,
-    NotificationsModule
+    NotificationsModule,
+    MetricsModule
   ],
   providers: [
     {
