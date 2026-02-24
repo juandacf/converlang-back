@@ -43,8 +43,8 @@ export class CreateUserAdminDto {
     password: string;
 
     @IsNumber()
-    @IsOptional()
-    gender_id?: number;
+    @IsNotEmpty({ message: 'El género es obligatorio' })
+    gender_id: number;
 
     @IsDateString()
     @IsNotEmpty()

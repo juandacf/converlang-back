@@ -17,6 +17,20 @@ export class AdminService {
     private readonly authService: AuthService,
   ) { }
 
+  /**
+   * Sanitiza strings para prevenir inyección SQL y XSS
+   * Elimina caracteres peligrosos y patrones de inyección
+   */
+  private sanitizeInput(value: string): string {
+    if (!value || typeof value !== 'string') return value;
+    return value
+      .replace(/[\x00-\x1f]/g, '') // caracteres de control
+      .replace(/['"`;\\]/g, '')     // caracteres peligrosos SQL
+      .replace(/<[^>]*>/g, '')      // tags HTML/XSS
+      .replace(/(--|\/\*|\*\/|xp_|exec|drop|insert|delete|update|union|select)/gi, '') // patrones SQL
+      .trim();
+  }
+
   // ========================================
   // CRUD DE USUARIOS
   // ========================================
@@ -40,18 +54,18 @@ export class AdminService {
       `;
 
       const params = [
-        dto.first_name,
-        dto.last_name,
-        dto.email,
+        this.sanitizeInput(dto.first_name),
+        this.sanitizeInput(dto.last_name),
+        dto.email.toLowerCase().trim(),
         passwordHash,
-        dto.gender_id || null,
+        dto.gender_id,
         dto.birth_date,
         dto.country_id.toUpperCase(),
-        dto.profile_photo || null,
+        dto.profile_photo ? this.sanitizeInput(dto.profile_photo) : null,
         dto.native_lang_id.toUpperCase(),
         dto.target_lang_id.toUpperCase(),
         dto.match_quantity || 10,
-        dto.description || null,
+        dto.description ? this.sanitizeInput(dto.description) : 'NO APLICA',
         dto.role_code.toLowerCase()
       ];
 
@@ -104,17 +118,17 @@ export class AdminService {
 
       const params = [
         userId,
-        dto.first_name,
-        dto.last_name,
-        dto.email,
+        this.sanitizeInput(dto.first_name),
+        this.sanitizeInput(dto.last_name),
+        dto.email.toLowerCase().trim(),
         dto.gender_id || null,
         dto.birth_date,
         dto.country_id.toUpperCase(),
-        dto.profile_photo || null,
+        dto.profile_photo ? this.sanitizeInput(dto.profile_photo) : null,
         dto.native_lang_id.toUpperCase(),
         dto.target_lang_id.toUpperCase(),
         dto.match_quantity,
-        dto.description || null
+        dto.description ? this.sanitizeInput(dto.description) : 'NO APLICA'
       ];
 
       const result = await this.db.query(query, params);
