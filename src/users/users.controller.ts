@@ -80,9 +80,22 @@ export class UsersController {
           cb(null, join(process.cwd(), 'user-pics'));
         },
         filename: (req, file, cb) => {
-          cb(null, `${req.params.id}.png`);
+          // Preservar la extensión original del archivo
+          const ext = file.originalname.split('.').pop()?.toLowerCase() || 'png';
+          cb(null, `${req.params.id}.${ext}`);
         },
       }),
+      fileFilter: (req, file, cb) => {
+        const allowedMimes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+        if (allowedMimes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('Solo se permiten archivos PNG, JPG o SVG'), false);
+        }
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB máximo
+      },
     }),
   )
   async uploadUserPhoto(
@@ -95,7 +108,8 @@ export class UsersController {
 
     const previousPhoto = await this.usersService.getUserPhotoPath(id);
 
-    const newPath = `/user-pics/${id}.png`;
+    const ext = file.originalname.split('.').pop()?.toLowerCase() || 'png';
+    const newPath = `/user-pics/${id}.${ext}`;
 
     await this.usersService.updateProfilePhoto(id, newPath);
 
