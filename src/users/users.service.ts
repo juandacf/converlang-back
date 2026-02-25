@@ -8,6 +8,7 @@ import bcrypt from 'bcryptjs';
 import { potentialMatches } from './DTO/get-user-potential-matches.dto';
 import * as fs from 'fs';
 import { join } from 'path';
+import { randomUUID } from 'crypto';
 
 
 @Injectable()
@@ -224,6 +225,38 @@ export class UsersService {
       [reportedUserId]
     );
     return result[0];
+  }
+
+  // Métodos agregados para Recuperación de Contraseña
+
+  async createPasswordReset(id_user: number, token: string, expiresAt: Date) {
+    const resetId = randomUUID(); // ID autogenerado uuidv4
+    return this.db.query(
+      `SELECT fun_create_password_reset($1, $2, $3, $4)`,
+      [resetId, id_user, token, expiresAt]
+    );
+  }
+
+  async getPasswordResetByToken(token: string) {
+    const result = await this.db.query<{ id_user: number, expires_at: Date }>(
+      `SELECT * FROM fun_get_password_reset_by_token($1)`,
+      [token]
+    );
+    return result.length > 0 ? result[0] : null;
+  }
+
+  async deletePasswordResetByUserId(id_user: number) {
+    return this.db.query(
+      `SELECT fun_delete_password_reset($1)`,
+      [id_user]
+    );
+  }
+
+  async updatePassword(id_user: number, passwordHash: string) {
+    return this.db.query(
+      `SELECT fun_update_user_password($1, $2)`,
+      [id_user, passwordHash]
+    );
   }
 
 }

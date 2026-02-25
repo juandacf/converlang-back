@@ -7,6 +7,7 @@ import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ActiveUserGuard } from './guards/active-user.guard';
+import { MailService } from './mail.service';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { ActiveUserGuard } from './guards/active-user.guard';
   providers: [
     AuthService,
     JwtStrategy,
-    ActiveUserGuard
+    ActiveUserGuard,
+    MailService
   ],
   controllers: [AuthController],
   exports: [ActiveUserGuard, AuthService]

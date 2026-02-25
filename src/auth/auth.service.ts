@@ -4,6 +4,8 @@ import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
 import { User } from 'src/users/DTO/user.type';
 import { UserValidation } from 'src/users/DTO/user-validation.type';
+import { MailService } from './mail.service';
+import { randomBytes } from 'crypto';
 
 /**
  * AuthService — Autenticación + Seguimiento de usuarios en línea
@@ -50,6 +52,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) { }
 
   // ── Lifecycle Hooks ──
@@ -167,5 +170,55 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
     return {
       access_token: this.jwtService.sign(payload),
     };
+  }
+
+  // ── Funciones de Recuperación de Contraseña ──
+
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      // Respondemos positivamente siempre para evitar ataques de enumeración (saber qué correos existen)
+      return { message: 'Si el correo está registrado en nuestro sistema, hemos enviado las instrucciones para restablecer tu contraseña.' };
+    }
+
+    // Generar token criptográficamente seguro
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Expiración exacta en 15 minutos
+
+    // Guardar token en BD
+    await this.usersService.createPasswordReset(user.id_user, token, expiresAt);
+
+    // Enviar el correo
+    await this.mailService.sendPasswordResetEmail(user.email, token);
+
+    return { message: 'Si el correo está registrado en nuestro sistema, hemos enviado las instrucciones para restablecer tu contraseña.' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const resetRecord = await this.usersService.getPasswordResetByToken(token);
+
+    if (!resetRecord) {
+      throw new UnauthorizedException('Token inválido o expirado.');
+    }
+
+    const now = new Date();
+    // Comparar fecha de expiración
+    if (new Date(resetRecord.expires_at) < now) {
+      // Eliminar el token porque ya expiró
+      await this.usersService.deletePasswordResetByUserId(resetRecord.id_user);
+      throw new UnauthorizedException('El token ha expirado. Por favor solicita uno nuevo.');
+    }
+
+    // Hashear nueva contraseña
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(newPassword, salt);
+
+    // Guardar en la BD
+    await this.usersService.updatePassword(resetRecord.id_user, passwordHash);
+
+    // Invalidar token eliminándolo
+    await this.usersService.deletePasswordResetByUserId(resetRecord.id_user);
+
+    return { message: 'Contraseña actualizada exitosamente.' };
   }
 }
