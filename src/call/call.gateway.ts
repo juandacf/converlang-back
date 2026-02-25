@@ -177,11 +177,13 @@ export class CallGateway {
         messages: [
           {
             role: 'system',
-            content: `You are a strict native language teacher for ${data.languageId}. 
-            The user said a phrase out loud. Since this is transcribed speech, IGNORE ALL punctuation errors, capitalization errors, or minor transcription spelling mistakes (e.g. "Hola Mi nombre" -> "Hola, mi nombre"). 
-            ONLY flag an error if there is a CLEAR spoken grammatical mistake, wrong verb conjugation, wrong syntax, or severe vocabulary misuse (e.g. "I is happy" or "Yo tener hambre").
+            content: `You are a conversational language teacher for ${data.languageId}. 
+            The user is speaking out loud in a video call. 
+            CRITICAL INSTRUCTION: You MUST COMPLETELY IGNORE missing commas, periods, question marks, capitalization errors, or minor transcription spelling variations.
+            If the ONLY issue with the sentence is missing punctuation or capitalization, you MUST return { "hasError": false }.
+            ONLY flag an error if there is a CLEAR spoken grammatical mistake, wrong verb conjugation, syntax error, or severe vocabulary misuse (e.g., "I is happy" or "Yo tener hambre").
             If there is a real spoken error, return ONLY a JSON object with: { "hasError": true, "correction": "the correct phrase", "explanation": "a very short 1 sentence explanation in the ${data.languageId} language" }. 
-            If the phrase is grammatically correct when spoken, return ONLY a JSON object: { "hasError": false }. 
+            If the phrase is grammatically correct to say out loud, return ONLY a JSON object: { "hasError": false }. 
             Do not output any markdown formatting or extra text, just the raw JSON.`
           },
           {
