@@ -7,6 +7,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import Groq from 'groq-sdk';
+import { Inject, forwardRef } from '@nestjs/common';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -14,6 +16,14 @@ import Groq from 'groq-sdk';
 export class CallGateway {
   @WebSocketServer()
   server: Server;
+
+  constructor(
+    @Inject(forwardRef(() => NotificationsGateway))
+    private readonly notificationsGateway: NotificationsGateway,
+  ) { }
+
+  // Usuarios actualmente en llamada: userId -> matchId
+  private usersInCall = new Map<number, number>();
 
   // Groq SDK Client (we will pass the key via environment variables in production)
   // For the POC, if there's no env var, we instantiate without it to show the logic structure.
@@ -24,11 +34,18 @@ export class CallGateway {
   // ============================================
   @SubscribeMessage('joinCallRoom')
   handleJoinCallRoom(
-    @MessageBody() matchId: number,
+    @MessageBody() data: { matchId: number; userId?: number },
     @ConnectedSocket() client: Socket,
   ) {
-    const room = `call_${Number(matchId)}`;
+    const matchId = typeof data === 'number' ? data : Number(data.matchId);
+    const userId = typeof data === 'number' ? null : data.userId;
+    const room = `call_${matchId}`;
     client.join(room);
+
+    // Registrar usuario como "en llamada"
+    if (userId) {
+      this.usersInCall.set(Number(userId), matchId);
+    }
 
     return { ok: true, room };
   }
@@ -38,18 +55,36 @@ export class CallGateway {
   // ============================================
   @SubscribeMessage('callRequest')
   handleCallRequest(
-    @MessageBody() data: { matchId: number; caller: any },
+    @MessageBody() data: { matchId: number; caller: any; targetUserId?: number },
     @ConnectedSocket() client: Socket,
   ) {
     const matchId = Number(data.matchId);
     const room = `call_${matchId}`;
 
+    // Verificar si el usuario destino ya está en una llamada
+    if (data.targetUserId && this.usersInCall.has(Number(data.targetUserId))) {
+      // Notificar al caller que el usuario está ocupado
+      this.notificationsGateway.sendNotification(Number(data.caller?.userId), {
+        type: 'user_busy',
+        matchId,
+        targetUserId: Number(data.targetUserId),
+      });
+      return { ok: false, reason: 'user_busy' };
+    }
 
-
-    // IMPORTANT: solo a los demás, no al emisor
+    // Emitir a la sala de la llamada (para quienes ya estén en VideoCall)
     client.to(room).emit('incomingCall', {
       caller: data.caller,
     });
+
+    // Emitir notificación GLOBAL al usuario objetivo (sin importar en qué página esté)
+    if (data.targetUserId) {
+      this.notificationsGateway.sendNotification(Number(data.targetUserId), {
+        type: 'incoming_call',
+        matchId,
+        caller: data.caller,
+      });
+    }
 
     return { ok: true };
   }
@@ -72,17 +107,27 @@ export class CallGateway {
   }
 
   // ============================================
-  // 3. Llamada rechazada
+  // 3. Llamada rechazada / no contestada
   // ============================================
   @SubscribeMessage('callRejected')
   handleCallRejected(
-    @MessageBody() data: { matchId: number },
+    @MessageBody() data: { matchId: number; callerUserId?: number; reason?: string },
     @ConnectedSocket() client: Socket,
   ) {
     const matchId = Number(data.matchId);
     const room = `call_${matchId}`;
 
     client.to(room).emit('callRejected');
+
+    // Notificar al caller por su canal personal
+    if (data.callerUserId) {
+      this.notificationsGateway.sendNotification(Number(data.callerUserId), {
+        type: 'call_rejected',
+        matchId,
+        reason: data.reason || 'rejected',
+      });
+    }
+
     return { ok: true };
   }
 
@@ -147,14 +192,26 @@ export class CallGateway {
   // ============================================
   @SubscribeMessage('endCall')
   handleEndCall(
-    @MessageBody() data: { matchId: number },
+    @MessageBody() data: { matchId: number; targetUserId?: number; userId?: number },
     @ConnectedSocket() client: Socket,
   ) {
     const matchId = Number(data.matchId);
     const room = `call_${matchId}`;
 
-    // Notificar al otro usuario
+    // Quitar ambos usuarios del mapa de "en llamada"
+    if (data.userId) this.usersInCall.delete(Number(data.userId));
+    if (data.targetUserId) this.usersInCall.delete(Number(data.targetUserId));
+
+    // Notificar al otro usuario por la sala de la llamada
     client.to(room).emit('callEnded');
+
+    // También notificar por la sala personal de notificaciones (respaldo)
+    if (data.targetUserId) {
+      this.notificationsGateway.sendNotification(Number(data.targetUserId), {
+        type: 'call_ended',
+        matchId,
+      });
+    }
 
     return { ok: true };
   }
