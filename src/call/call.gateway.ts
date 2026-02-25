@@ -154,4 +154,24 @@ export class CallGateway {
     return { ok: true };
   }
 
+  // ============================================
+  // 8. Transcripción en tiempo real (Paso 2)
+  // ============================================
+  @SubscribeMessage('transcribed_phrase')
+  handleTranscribedPhrase(
+    @MessageBody() data: { matchId: number; userId: number; languageId: string; text: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const matchId = Number(data.matchId);
+
+    // De momento, solo imprimimos en la consola del backend para confirmar el Paso 2
+    console.log(`[🗣 Socket Recibido | Match ${matchId} | User ${data.userId}] en ${data.languageId}: "${data.text}"`);
+
+    // Podríamos también retransmitirlo al otro usuario si quisiéramos mostrarle los subtítulos
+    // const room = `call_${matchId}`;
+    // client.to(room).emit('transcribed_phrase', data);
+
+    return { ok: true };
+  }
+
 }
