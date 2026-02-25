@@ -6,6 +6,7 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import Groq from 'groq-sdk';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -13,6 +14,10 @@ import { Server, Socket } from 'socket.io';
 export class CallGateway {
   @WebSocketServer()
   server: Server;
+
+  // Groq SDK Client (we will pass the key via environment variables in production)
+  // For the POC, if there's no env var, we instantiate without it to show the logic structure.
+  private groq = new Groq({ apiKey: process.env.GROQ_API_KEY || 'dummy_key_if_not_set' });
 
   // ============================================
   // 0. Unirse a sala de videollamada
@@ -155,21 +160,60 @@ export class CallGateway {
   }
 
   // ============================================
-  // 8. Transcripción en tiempo real (Paso 2)
+  // 8. Transcripción en tiempo real (Paso 2 y Paso 3)
   // ============================================
   @SubscribeMessage('transcribed_phrase')
-  handleTranscribedPhrase(
+  async handleTranscribedPhrase(
     @MessageBody() data: { matchId: number; userId: number; languageId: string; text: string },
     @ConnectedSocket() client: Socket,
   ) {
     const matchId = Number(data.matchId);
-
-    // De momento, solo imprimimos en la consola del backend para confirmar el Paso 2
     console.log(`[🗣 Socket Recibido | Match ${matchId} | User ${data.userId}] en ${data.languageId}: "${data.text}"`);
 
-    // Podríamos también retransmitirlo al otro usuario si quisiéramos mostrarle los subtítulos
-    // const room = `call_${matchId}`;
-    // client.to(room).emit('transcribed_phrase', data);
+    // --- PASO 3: Mandar a la IA para corrección gramatical ---
+    try {
+      const response = await this.groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a strict native language teacher for ${data.languageId}. 
+            The user said a phrase out loud. Since this is transcribed speech, IGNORE ALL punctuation errors, capitalization errors, or minor transcription spelling mistakes (e.g. "Hola Mi nombre" -> "Hola, mi nombre"). 
+            ONLY flag an error if there is a CLEAR spoken grammatical mistake, wrong verb conjugation, wrong syntax, or severe vocabulary misuse (e.g. "I is happy" or "Yo tener hambre").
+            If there is a real spoken error, return ONLY a JSON object with: { "hasError": true, "correction": "the correct phrase", "explanation": "a very short 1 sentence explanation in the ${data.languageId} language" }. 
+            If the phrase is grammatically correct when spoken, return ONLY a JSON object: { "hasError": false }. 
+            Do not output any markdown formatting or extra text, just the raw JSON.`
+          },
+          {
+            role: 'user',
+            content: data.text
+          }
+        ],
+        temperature: 0.1, // Baja temperatura para mantener respuestas estrictamente limitadas al JSON
+        max_tokens: 150,
+      });
+
+      const aiResponseText = response.choices[0]?.message?.content || '{}';
+      let correctionData = { hasError: false };
+
+      try {
+        const cleanJson = aiResponseText.replace(/```json/g, '').replace(/```/g, '');
+        correctionData = JSON.parse(cleanJson);
+      } catch (e) {
+        console.error("Groq no devolvió un JSON válido:", aiResponseText);
+      }
+
+      console.log(`[🧠 IA Análisis]:`, correctionData);
+
+      // --- PASO 4: Enviar la corrección de vuelta al Frontend (al mismo usuario) ---
+      client.emit('grammar_correction', {
+        originalText: data.text,
+        correction: correctionData
+      });
+
+    } catch (error) {
+      console.error("[Groq API Error]: Posiblemente falte configurar la api key GROQ_API_KEY en .env", error.message);
+    }
 
     return { ok: true };
   }
