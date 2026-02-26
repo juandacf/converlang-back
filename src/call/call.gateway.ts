@@ -4,6 +4,7 @@ import {
   SubscribeMessage,
   ConnectedSocket,
   MessageBody,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import Groq from 'groq-sdk';
@@ -13,7 +14,7 @@ import { NotificationsGateway } from '../notifications/notifications.gateway';
 @WebSocketGateway({
   cors: { origin: '*' },
 })
-export class CallGateway {
+export class CallGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -24,6 +25,9 @@ export class CallGateway {
 
   // Usuarios actualmente en llamada: userId -> matchId
   private usersInCall = new Map<number, number>();
+
+  // Mapa para rastrear qué userId pertenece a cada socket.id (para limpieza al desconectar)
+  private socketToUser = new Map<string, number>();
 
   // Groq SDK Client (we will pass the key via environment variables in production)
   // For the POC, if there's no env var, we instantiate without it to show the logic structure.
@@ -45,9 +49,20 @@ export class CallGateway {
     // Registrar usuario como "en llamada"
     if (userId) {
       this.usersInCall.set(Number(userId), matchId);
+      this.socketToUser.set(client.id, Number(userId));
     }
 
     return { ok: true, room };
+  }
+
+  // Manejar desconexión inesperada
+  handleDisconnect(client: Socket) {
+    const userId = this.socketToUser.get(client.id);
+    if (userId) {
+      this.usersInCall.delete(userId);
+      this.socketToUser.delete(client.id);
+      console.log(`[🔌 CallGateway] Usuario ${userId} desconectado (limpieza de estado de llamada)`);
+    }
   }
 
   // ============================================
@@ -199,7 +214,10 @@ export class CallGateway {
     const room = `call_${matchId}`;
 
     // Quitar ambos usuarios del mapa de "en llamada"
-    if (data.userId) this.usersInCall.delete(Number(data.userId));
+    if (data.userId) {
+      this.usersInCall.delete(Number(data.userId));
+      this.socketToUser.delete(client.id);
+    }
     if (data.targetUserId) this.usersInCall.delete(Number(data.targetUserId));
 
     // Notificar al otro usuario por la sala de la llamada
