@@ -26,6 +26,18 @@ export class AuthController {
     return { ok: true };
   }
 
+  /**
+   * POST /auth/logout
+   * Elimina el heartbeat del usuario inmediatamente para que aparezca
+   * offline en el dashboard de admin sin esperar al TTL.
+   */
+  @UseGuards(AuthGuard('jwt'))
+  @Post('logout')
+  logout(@Request() req) {
+    this.authService.removeHeartbeat(req.user.userId);
+    return { ok: true };
+  }
+
   @Post('forgot-password')
   async forgotPassword(@Body() body: { email: string }) {
     if (!body.email) {

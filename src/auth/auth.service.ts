@@ -41,7 +41,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
 
   // Tiempo de vida de un heartbeat: 2 minutos (120,000 ms)
   // Si un usuario no envía heartbeat en este tiempo, se considera offline
-  private readonly HEARTBEAT_TTL_MS = 2 * 60 * 1000;
+  private readonly HEARTBEAT_TTL_MS = 11 * 60 * 1000; // 11 min → tolerancia de 10 min sin actividad
 
   // Intervalo del worker de limpieza: cada 60 segundos
   private readonly CLEANUP_INTERVAL_MS = 60 * 1000;
@@ -94,6 +94,14 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
    */
   registerHeartbeat(userId: number): void {
     this.onlineUsers.set(userId, Date.now());
+  }
+
+  /**
+   * Elimina el heartbeat del usuario inmediatamente.
+   * Se llama desde POST /auth/logout para marcarlo offline al instante.
+   */
+  removeHeartbeat(userId: number): void {
+    this.onlineUsers.delete(userId);
   }
 
   /**
