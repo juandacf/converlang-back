@@ -565,18 +565,14 @@ export class AdminService {
   // ========================================
 
   /**
-   * Registrar acción en la tabla de auditoría
-   * @param table - Nombre de la tabla
-   * @param recordId - ID del registro afectado
-   * @param action - Acción realizada (CREATE, UPDATE, DELETE, etc.)
-   * @param notes - Notas adicionales
+   * Registrar acción en la tabla de auditoría.
+   * Usa SELECT fn_log_audit(...) — función definida en CRUD/audit_logs.sql.
    */
   private async logAudit(table: string, recordId: string, action: string, notes: string) {
-    const auditId = `AUD_${Date.now()}`;
     try {
       await this.db.query(
-        `INSERT INTO audit_logs (audit_id, table_name, record_id, action, new_values) VALUES ($1, $2, $3, $4, $5)`,
-        [auditId, table, recordId, action, JSON.stringify({ notes })]
+        `SELECT fn_log_audit($1, $2, $3, $4)`,
+        [table, recordId, action, notes]
       );
     } catch (e) {
       console.error('Error logging audit:', e);
