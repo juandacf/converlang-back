@@ -39,9 +39,9 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
   // Map<userId, timestampMs> — almacena el último heartbeat de cada usuario
   private readonly onlineUsers = new Map<number, number>();
 
-  // Tiempo de vida de un heartbeat: 2 minutos (120,000 ms)
+  // Tiempo de vida de un heartbeat: 5 minutos (300,000 ms)
   // Si un usuario no envía heartbeat en este tiempo, se considera offline
-  private readonly HEARTBEAT_TTL_MS = 11 * 60 * 1000; // 11 min → tolerancia de 10 min sin actividad
+  private readonly HEARTBEAT_TTL_MS = 5 * 60 * 1000; // 5 min → tolerancia de 4 min sin actividad
 
   // Intervalo del worker de limpieza: cada 60 segundos
   private readonly CLEANUP_INTERVAL_MS = 60 * 1000;
