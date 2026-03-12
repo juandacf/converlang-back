@@ -141,6 +141,15 @@ export class CallGateway implements OnGatewayDisconnect {
         matchId,
         reason: data.reason || 'rejected',
       });
+
+      // ¡IMPORTANTE! Liberar al caller del estado "en llamada"
+      this.usersInCall.delete(Number(data.callerUserId));
+    }
+
+    // Liberar a quien rechaza (por si hubiera quedado registrado en la sala)
+    const receiverUserId = this.socketToUser.get(client.id);
+    if (receiverUserId) {
+      this.usersInCall.delete(receiverUserId);
     }
 
     return { ok: true };
