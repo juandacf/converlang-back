@@ -38,11 +38,29 @@ export class MetricsService {
     }
 
     async getAvgInteractionsPerCall(userId: number) {
-        const result = await this.db.query(
-            'SELECT * FROM fun_get_avg_interactions_per_call($1)',
-            [userId],
-        );
-        return result[0] || { avg_interactions: 0 };
+        try {
+            // Evaluando cuantos mensajes se envían (total)
+            const msgs = await this.db.query(
+                'SELECT COUNT(*)::int as total FROM chat_logs WHERE sender_id = $1',
+                [userId]
+            );
+
+            // Evaluando cuantas llamadas (sesiones) tiene el usuario
+            const sessions = await this.db.query(
+                'SELECT COUNT(*)::int as total FROM sessions WHERE id_user1 = $1 OR id_user2 = $1',
+                [userId]
+            );
+
+            const totalMsgs = msgs[0]?.total || 0;
+            const totalSessions = sessions[0]?.total || 0;
+
+            const avg = totalSessions > 0 ? (totalMsgs / totalSessions) : totalMsgs;
+
+            return { avg_interactions: avg };
+        } catch (error) {
+            console.error("Error calculando el promedio de mensajes:", error);
+            return { avg_interactions: 0 };
+        }
     }
 
     async getAllMetrics(userId: number) {
