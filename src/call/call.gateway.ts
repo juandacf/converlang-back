@@ -78,12 +78,6 @@ export class CallGateway implements OnGatewayDisconnect {
 
     // Verificar si el usuario destino ya está en una llamada
     if (data.targetUserId && this.usersInCall.has(Number(data.targetUserId))) {
-      // Notificar al caller que el usuario está ocupado
-      this.notificationsGateway.sendNotification(Number(data.caller?.userId), {
-        type: 'user_busy',
-        matchId,
-        targetUserId: Number(data.targetUserId),
-      });
       return { ok: false, reason: 'user_busy' };
     }
 
@@ -91,15 +85,6 @@ export class CallGateway implements OnGatewayDisconnect {
     client.to(room).emit('incomingCall', {
       caller: data.caller,
     });
-
-    // Emitir notificación GLOBAL al usuario objetivo (sin importar en qué página esté)
-    if (data.targetUserId) {
-      this.notificationsGateway.sendNotification(Number(data.targetUserId), {
-        type: 'incoming_call',
-        matchId,
-        caller: data.caller,
-      });
-    }
 
     return { ok: true };
   }
@@ -132,23 +117,17 @@ export class CallGateway implements OnGatewayDisconnect {
     const matchId = Number(data.matchId);
     const room = `call_${matchId}`;
 
-    client.to(room).emit('callRejected');
+    client.to(room).emit('callRejected', { matchId });
 
     // Notificar al caller por su canal personal
-    if (data.callerUserId) {
-      this.notificationsGateway.sendNotification(Number(data.callerUserId), {
-        type: 'call_rejected',
-        matchId,
-        reason: data.reason || 'rejected',
-      });
-
+    if (data.callerUserId && this.usersInCall.get(Number(data.callerUserId)) === matchId) {
       // ¡IMPORTANTE! Liberar al caller del estado "en llamada"
       this.usersInCall.delete(Number(data.callerUserId));
     }
 
     // Liberar a quien rechaza (por si hubiera quedado registrado en la sala)
     const receiverUserId = this.socketToUser.get(client.id);
-    if (receiverUserId) {
+    if (receiverUserId && this.usersInCall.get(receiverUserId) === matchId) {
       this.usersInCall.delete(receiverUserId);
     }
 
@@ -223,23 +202,18 @@ export class CallGateway implements OnGatewayDisconnect {
     const room = `call_${matchId}`;
 
     // Quitar ambos usuarios del mapa de "en llamada"
-    if (data.userId) {
+    if (data.userId && this.usersInCall.get(Number(data.userId)) === matchId) {
       this.usersInCall.delete(Number(data.userId));
       this.socketToUser.delete(client.id);
     }
-    if (data.targetUserId) this.usersInCall.delete(Number(data.targetUserId));
-
-    // Notificar al otro usuario por la sala de la llamada
-    client.to(room).emit('callEnded');
-
-    // También notificar por la sala personal de notificaciones (respaldo)
-    if (data.targetUserId) {
-      this.notificationsGateway.sendNotification(Number(data.targetUserId), {
-        type: 'call_ended',
-        matchId,
-      });
+    if (data.targetUserId && this.usersInCall.get(Number(data.targetUserId)) === matchId) {
+      this.usersInCall.delete(Number(data.targetUserId));
     }
 
+    // Notificar al otro usuario por la sala de la llamada
+    client.to(room).emit('callEnded', { matchId });
+
+    // También notificar por la sala personal de notificaciones (respaldo)
     return { ok: true };
   }
 
