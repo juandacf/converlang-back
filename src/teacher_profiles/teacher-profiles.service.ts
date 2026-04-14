@@ -10,12 +10,12 @@ export class TeacherProfilesService {
 
   async getAll(): Promise<TeacherProfile[]> {
     // False indica que traiga todos, verificados o no.
-    return this.db.query<TeacherProfile>('SELECT * FROM get_all_teacher_profiles(false)');
+    return this.db.query<TeacherProfile>('SELECT user_id, teaching_language_id, lang_certification, academic_title, experience_certification, hourly_rate, specialization, years_experience, availability_notes, is_verified, verified_at, verified_by, created_at, updated_at FROM get_all_teacher_profiles(false)');
   }
 
   async findOne(id: number): Promise<TeacherProfile | null> {
     const result = await this.db.query<TeacherProfile>(
-        'SELECT * FROM get_teacher_profile_by_id($1);', 
+        'SELECT user_id, teaching_language_id, lang_certification, academic_title, experience_certification, hourly_rate, specialization, years_experience, availability_notes, is_verified, verified_at, verified_by, created_at, updated_at FROM get_teacher_profile_by_id($1);', 
         [id]
     );
     return result[0] || null;
@@ -24,7 +24,7 @@ export class TeacherProfilesService {
   async create(data: CreateTeacherProfileDto): Promise<TeacherProfile> {
     try {
       const result = await this.db.query<TeacherProfile>(
-        `SELECT * FROM add_teacher_profile($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+        `SELECT user_id, teaching_language_id, lang_certification, academic_title, experience_certification, hourly_rate, specialization, years_experience, availability_notes, is_verified, verified_at, verified_by, created_at, updated_at FROM add_teacher_profile($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
         [
           data.user_id,
           data.teaching_language_id,
@@ -62,7 +62,7 @@ export class TeacherProfilesService {
     if (!current) throw new Error('Profile not found');
 
     const result = await this.db.query<TeacherProfile>(
-      `SELECT * FROM update_teacher_profile($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+      `SELECT user_id, teaching_language_id, lang_certification, academic_title, experience_certification, hourly_rate, specialization, years_experience, availability_notes, is_verified, verified_at, verified_by, created_at, updated_at FROM update_teacher_profile($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
       [
         id,
         data.teaching_language_id ?? current.teaching_language_id, // Mantener anterior si no viene

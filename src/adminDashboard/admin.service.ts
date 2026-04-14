@@ -48,7 +48,7 @@ export class AdminService {
 
       // Llamar a la función de BD fun_insert_usuarios
       const query = `
-        SELECT * FROM fun_insert_usuarios(
+        SELECT id_user, first_name, last_name, email, gender_id, birth_date, country_id, profile_photo, native_lang_id, target_lang_id, match_quantity, role_code, description, is_active, email_verified, last_login, created_at, updated_at FROM fun_insert_usuarios(
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
         )
       `;
@@ -260,7 +260,7 @@ export class AdminService {
    */
   async getAllUsers(includeInactive: boolean = false) {
     try {
-      const query = `SELECT * FROM get_all_users($1)`;
+      const query = `SELECT id_user, first_name, last_name, email, gender_id, birth_date, country_id, profile_photo, native_lang_id, target_lang_id, match_quantity, role_code, description, is_active, email_verified, last_login, created_at, updated_at FROM get_all_users($1)`;
       const result = await this.db.query(query, [includeInactive]);
       return result;
     } catch (error) {
@@ -276,7 +276,7 @@ export class AdminService {
    */
   async getUserById(userId: number) {
     try {
-      const query = `SELECT * FROM get_user_by_id($1)`;
+      const query = `SELECT id_user, first_name, last_name, email, gender_id, birth_date, country_id, profile_photo, native_lang_id, target_lang_id, match_quantity, role_code, description, is_active, email_verified, last_login, created_at, updated_at FROM get_user_by_id($1)`;
       const result = await this.db.query(query, [userId]);
 
       if (result && result[0]) {

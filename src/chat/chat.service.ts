@@ -8,7 +8,7 @@ export class ChatService {
 
   async getMatches(userId: number) {
     const result = await this.db.query(
-      `SELECT * FROM fun_get_user_matches($1)`,
+      `SELECT match_id, matched_user_id, match_time, first_name, last_name, email, profile_photo FROM fun_get_user_matches($1)`,
       [userId],
     );
     return result; // 👈 CORRECTO
@@ -17,7 +17,7 @@ export class ChatService {
 
   async getMessagesByMatch(matchId: number) {
     const result = await this.db.query(
-      `SELECT * FROM fun_get_messages_by_match($1)`,
+      `SELECT message_id, sender_id, message, sent_at, is_corrected, is_read FROM fun_get_messages_by_match($1)`,
       [matchId],
     );
     return result; // 👈 CORRECTO
@@ -26,7 +26,7 @@ export class ChatService {
 
   async sendMessage(matchId: number, senderId: number, message: string) {
     const result = await this.db.query(
-      `SELECT * FROM fun_send_message($1, $2, $3)`,
+      `SELECT message_id, sender_id, message, sent_at, is_read FROM fun_send_message($1, $2, $3)`,
       [matchId, senderId, message],
     );
 
@@ -44,7 +44,7 @@ export class ChatService {
 
   async getChatList(userId: number) {
     const result = await this.db.query(
-      `SELECT * FROM fun_get_chat_list($1)`,
+      `SELECT match_id, other_user_id, full_name, profile_photo, last_message, last_message_time FROM fun_get_chat_list($1)`,
       [userId],
     );
     return result; // 👈 CORRECTO

@@ -29,7 +29,7 @@ export class NotificationsService {
     async getUserNotifications(userId: number, limit: number = 20): Promise<any[]> {
         try {
             const result = await this.db.query(
-                'SELECT * FROM get_user_notifications($1, $2)',
+                'SELECT notification_id, user_id, title, message, notification_type, read_at, created_at, is_read FROM get_user_notifications($1, $2)',
                 [userId, limit]
             );
             return result;
@@ -42,7 +42,7 @@ export class NotificationsService {
     async getLatestNotification(userId: number): Promise<any> {
         try {
             const result = await this.db.query(
-                'SELECT * FROM get_user_notifications($1, 1)',
+                'SELECT notification_id, user_id, title, message, notification_type, read_at, created_at, is_read FROM get_user_notifications($1, 1)',
                 [userId]
             );
             return result[0] || null;

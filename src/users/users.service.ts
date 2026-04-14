@@ -71,7 +71,7 @@ export class UsersService {
       const avatarPath = `${this.AVATARS[Math.floor(Math.random() * this.AVATARS.length)]}`;
 
       const result = await this.db.query<User>(
-        'SELECT * FROM fun_insert_usuarios($1, $2, $3, $4, $5, $6, $7, $12, $8, $9, 10, $10, $11)',
+        'SELECT id_user, first_name, last_name, email, gender_id, birth_date, country_id, profile_photo, native_lang_id, target_lang_id, match_quantity, role_code, description, is_active, email_verified, last_login, created_at, updated_at FROM fun_insert_usuarios($1, $2, $3, $4, $5, $6, $7, $12, $8, $9, 10, $10, $11)',
         [
           user.first_name,
           user.last_name,
@@ -150,13 +150,13 @@ export class UsersService {
   }
 
   async getPotentialMatches(id_user: number): Promise<potentialMatches[]> {
-    const result = await this.db.query<potentialMatches>('SELECT * FROM fun_get_potential_users($1);', [id_user])
+    const result = await this.db.query<potentialMatches>('SELECT id_user, first_name, last_name, email, native_lang_id_out, target_lang_id_out, description, profile_photo, country_id, age FROM fun_get_potential_users($1);', [id_user])
     return result;
   }
 
   async findByEmail(email: string) {
     const query = `
-    SELECT * FROM fun_find_user_by_email($1);
+    SELECT id_user, first_name, last_name, email, password_hash, role_code, role_name, is_active FROM fun_find_user_by_email($1);
   `;
 
     const result = await this.db.query(query, [email]);
@@ -165,7 +165,7 @@ export class UsersService {
   }
 
   async getCurrentMatches(id_user: number): Promise<User[]> {
-    const result = await this.db.query('SELECT * FROM fun_get_user_matches($1)', [id_user])
+    const result = await this.db.query('SELECT match_id, matched_user_id, match_time, first_name, last_name, email, profile_photo FROM fun_get_user_matches($1)', [id_user])
     return result;
   }
 
@@ -221,7 +221,7 @@ export class UsersService {
     o_is_active: boolean;
   }> {
     const result = await this.db.query(
-      'SELECT * FROM fun_generate_report($1)',
+      'SELECT o_id_user, o_first_name, o_last_name, o_email, o_report_quantity, o_is_active FROM fun_generate_report($1)',
       [reportedUserId]
     );
     return result[0];
@@ -239,7 +239,7 @@ export class UsersService {
 
   async getPasswordResetByToken(token: string) {
     const result = await this.db.query<{ id_user: number, expires_at: Date }>(
-      `SELECT * FROM fun_get_password_reset_by_token($1)`,
+      `SELECT id_user, expires_at FROM fun_get_password_reset_by_token($1)`,
       [token]
     );
     return result.length > 0 ? result[0] : null;

@@ -7,7 +7,7 @@ export class MetricsService {
 
     async getPreferredUser(userId: number) {
         const result = await this.db.query(
-            'SELECT * FROM fun_get_preferred_match_user($1)',
+            'SELECT id_user, first_name, last_name, profile_photo, interaction_count FROM fun_get_preferred_match_user($1)',
             [userId],
         );
         return result[0] || null;
@@ -15,7 +15,7 @@ export class MetricsService {
 
     async getMatchCountries(userId: number) {
         const result = await this.db.query(
-            'SELECT * FROM fun_get_match_countries($1)',
+            'SELECT country_name, match_count FROM fun_get_match_countries($1)',
             [userId],
         );
         return result;
@@ -23,7 +23,7 @@ export class MetricsService {
 
     async getChatWordFrequency(userId: number) {
         const result = await this.db.query(
-            'SELECT * FROM fun_get_chat_words($1)',
+            'SELECT word, frequency FROM fun_get_chat_words($1)',
             [userId],
         );
         return result;
@@ -31,7 +31,7 @@ export class MetricsService {
 
     async getNewMatchesCount(userId: number) {
         const result = await this.db.query(
-            'SELECT * FROM fun_get_new_matches_count($1)',
+            'SELECT new_matches FROM fun_get_new_matches_count($1)',
             [userId],
         );
         return result[0] || { new_matches: 0 };
