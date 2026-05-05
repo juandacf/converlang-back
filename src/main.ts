@@ -3,18 +3,9 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import * as fs from 'fs';
 
 async function bootstrap() {
-  // 🔐 HTTPS options (mkcert)
-  const httpsOptions = {
-    key: fs.readFileSync('localhost+3-key.pem'),
-    cert: fs.readFileSync('localhost+3.pem'),
-  };
-
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    httpsOptions,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // ✅ Pipes globales
   app.useGlobalPipes(
