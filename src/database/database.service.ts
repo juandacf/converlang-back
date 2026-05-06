@@ -12,6 +12,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       user: process.env.USERR,
       password: process.env.PASSWORD,
       database: process.env.DATABASE,
+      max: 5, 
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
     });
 
     try {
