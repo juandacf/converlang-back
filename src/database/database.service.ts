@@ -8,7 +8,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     this.pool = new Pool({
       host: process.env.HOST,
-      port: Number(process.env.PORT),
+      port: Number(process.env.DB_PORT),
       user: process.env.USERR,
       password: process.env.PASSWORD,
       database: process.env.DATABASE,
