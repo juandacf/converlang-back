@@ -11,7 +11,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       port: Number(process.env.DB_PORT),
       user: process.env.USERR,
       password: process.env.PASSWORD,
-      database: process.env.DATABASE
+      database: process.env.DATABASE,
+      max:2
     });
 
     try {
